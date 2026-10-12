@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>V21 手套标定工作台</title></head>
+<body>
+<header><div><span class="eyebrow">V21 · 独立标定工具</span><h1>实体手套 / 原始录制 → 标定 → 三栏回放</h1></div><span class="badge">不刷机 · 不写板端标定</span></header>
+<main>
+<nav id="module-tabs" class="module-tabs" role="tablist" aria-label="工作台模块" aria-orientation="horizontal">
+<button id="module-tab-live" type="button" role="tab" aria-controls="live-section" aria-selected="false" tabindex="-1">实时手套采集</button>
+<button id="module-tab-recording" type="button" role="tab" aria-controls="recording-section" aria-selected="true" tabindex="0">选择原始子任务</button>
+<button id="module-tab-correction" type="button" role="tab" aria-controls="correction-section" aria-selected="false" tabindex="-1">零位微调 · 双手回放</button>
+<button id="module-tab-calibration" type="button" role="tab" aria-controls="calibration-section" aria-selected="false" tabindex="-1">六步零位与方向标定</button>
+<button id="module-tab-processing" type="button" role="tab" aria-controls="processing-section" aria-selected="false" tabindex="-1">单手处理与导出</button>
+<button id="module-tab-result" type="button" role="tab" aria-controls="result-replay" aria-selected="false" tabindex="-1">左右手只读回放</button>
+<button id="module-tab-queue" type="button" role="tab" aria-controls="export-queue" aria-selected="false" tabindex="-1">全局导出队列</button>
+</nav>
+<div id="global-error" class="notice error" role="alert" hidden></div>
+<section id="live-section" class="card live-card module-panel" role="tabpanel" aria-labelledby="module-tab-live" tabindex="0" hidden><h2>实时手套连接与原始动作采集</h2><p>只有点击准备或连接才访问所选手套。请按实际佩戴选择左手或右手，以你的选择为准，不改板端配置；离线导入和回放不会连接硬件。</p>
+<div class="row"><label class="grow">采集模式<select id="live-transport"><option value="dgst">DGST 完整采集（默认，需要相机）</option><option value="adb-ma782-v1">仅编码器兼容（无需相机）</option></select></label></div>
+<p id="live-transport-hint" class="hint" role="status">DGST 完整采集使用板端流与设备元数据；不会自动切换到兼容模式。</p>
+<div class="row"><button id="live-refresh">刷新发现</button><label class="grow">USB 手套 serial<select id="live-device"><option value="">请刷新并明确选择设备</option></select></label><div class="live-hand-choice" role="group" aria-labelledby="live-hand-label" aria-describedby="live-hand-hint"><span id="live-hand-label">实际佩戴手侧</span><div class="live-hand-buttons"><button id="live-hand-left" type="button" aria-pressed="false">左手</button><button id="live-hand-right" type="button" aria-pressed="false">右手</button></div></div></div>
+<p id="live-hand-hint" class="hint" role="status">请先按实际佩戴点击左手或右手，再连接；不改板端配置。</p>
+<div class="row"><button id="live-prepare">启用板端采集（会短暂 USB 重连）</button><button id="live-connect" class="primary" disabled>连接所选手套</button><button id="live-disconnect" disabled>断开</button></div>
+<p id="live-prepare-hint" class="hint">准备会启用 DGST + ACM + ADB、暂时移除 ECM 并重枚举 USB；同时停止板端 RTSP，由 DGST 接管相机（视频只排空，不保存）。不刷固件、不改持久配置或板端标定。准备完成后请刷新发现并重新确认 serial。</p>
+<div id="live-status" class="notice" role="status" aria-live="polite">未连接；不会自动发现或连接设备</div><p id="live-warning" class="warnings"></p><div id="live-error" class="notice error" role="alert" hidden></div>
+<p id="live-device-hand" class="hint" role="status"></p>
+<p id="live-identity" class="hint" role="status"></p>
+<section class="live-dials" aria-labelledby="live-dials-heading"><h3 id="live-dials-heading">统一 J1～J21 · 实时编码器码表</h3><p class="hint">左右手统一：J1～J5 侧摆，J6～J10 掌骨屈伸，J11～J15 次末节屈伸，J16～J20 末端屈伸；每组均按拇指到小拇指排列，J21 为小拇指 CMC。左右手独立映射物理 CS，卡片注明实际 CS 与原始数据列。显示原始绝对角 0～360°，0°在正上方、顺时针递增，不受预览零位或方向影响；全部 21 路始终展示，映射缺失时不猜测数值。</p><p id="live-frame-info" class="mono">等待新鲜编码器帧</p><div id="live-angles" class="live-angles"></div></section>
+<div class="row"><label class="grow">当前手套已保存匹配标定<select id="live-calibration-select" disabled><option value="">请先连接手套</option></select></label><button id="live-record-start" class="primary" disabled>开始原始动作录制</button><button id="live-record-stop" disabled>停止并导入离线处理</button></div>
+<p id="live-record-status" class="notice" role="status">先完成六步标定并保存，再开始动作录制。仅保存真实编码器，视频只排空丢弃。</p></section>
+<section id="recording-section" class="card module-panel" role="tabpanel" aria-labelledby="module-tab-recording" tabindex="0"><h2>选择原始子任务</h2><p>先从大目录选择子任务，再导入该任务的左右手录制。只读源数据，不连接设备。</p>
+<form id="task-root-form"><div class="row"><label class="grow">任务大目录<input id="task-root" required value="/home/boen/Desktop/0927_demo/demo1_0929/拧灯泡plus" autocomplete="off"></label><button id="refresh-tasks" type="submit">刷新任务列表</button></div></form>
+<div class="row"><label class="grow">双手子任务<select id="task-select"><option value="">请先刷新任务列表</option></select></label><button id="import-task" class="primary" type="button" disabled>导入所选子任务</button></div>
+<p id="task-list-status" class="notice" role="status">列出一级双手子目录及 *.v21glove.h5 采集文件；不会自动导入。</p>
+<details id="advanced-import" open><summary>录制路径：原始录制 / 对齐 HDF5 / pico 目录</summary>
+<p>原始录制支持双手 .v21glove.h5、dataglove 目录或 pico 根目录，唯一左 / 右配对自动联合导入。对齐 .aligned_60hz.h5 文件或其所在目录，请使用下方“对齐 HDF5 手动参数导入”。</p>
+<form id="import-form"><div class="row"><label class="grow">录制文件 / 目录<input id="recording-path" required value="/home/boen/Desktop/0927_demo/demo1_0929/拧灯泡plus/aligned_60hz_exo_glove" autocomplete="off"></label><button type="submit">发现并导入原始录制</button></div>
+<details><summary>补充缺失元数据（显式 JSON，可选）</summary><p>仅可补充录制缺失的身份、通道映射与角度语义，不能覆盖文件中已有事实。导入错误会指出所缺字段；不要猜测手侧、设备号或已应用标定。</p><label>元数据对象<textarea id="metadata" rows="6" spellcheck="false" placeholder='{"hand":"right","device_id":"实际设备十六进制编号"}'></textarea></label></details></form>
+</details>
+<details id="aligned-import" open><summary>对齐 HDF5 手动参数导入 · 左右手共同回放</summary>
+<p>使用上方“录制文件 / 目录”路径。目录内需有唯一的 <code>*.aligned_60hz.h5</code>。请分别上传左右手的完整项目标定 JSON，并明确选择每侧角度约定；不会借用旧会话标定，也不会猜测文件缺失的设备身份或角度语义。</p>
+<p class="notice">若选择“已校准有符号角”，上传参数必须是采集时已应用的零位与方向，用于反算原始角度；导入后再在微调区修改目标零位与方向。手动提供的参数与身份不是 HDF5 内嵌证据。</p>
+<form id="aligned-import-form" novalidate>
+<div class="row"><label class="grow">左手完整项目标定 JSON<input id="aligned-calibration-left" type="file" accept=".json" required></label><label class="grow">左手角度约定<select id="aligned-convention-left" required><option value="">请选择左手角度约定</option><option value="raw_absolute_0_360">原始绝对角（0～360°）</option><option value="calibrated_signed_pm180">已校准有符号角（−180～180°）</option></select></label></div>
+<div class="row"><label class="grow">右手完整项目标定 JSON<input id="aligned-calibration-right" type="file" accept=".json" required></label><label class="grow">右手角度约定<select id="aligned-convention-right" required><option value="">请选择右手角度约定</option><option value="raw_absolute_0_360">原始绝对角（0～360°）</option><option value="calibrated_signed_pm180">已校准有符号角（−180～180°）</option></select></label></div>
+<button id="import-aligned" class="primary" type="submit">手动导入对齐 HDF5（双手）</button>
+<p id="aligned-import-status" class="hint" role="status">上传与导入仅在内存中使用参数，不写设备默认标定或源文件，不自动处理或导出；只有之后明确点击保存，才写默认标定。</p>
+</form></details>
+<div id="recording-candidates-row" class="row" hidden><label class="grow">发现的原始录制（请选择实际手侧）<select id="recording-candidates"></select></label><button id="import-candidate" type="button">导入所选录制</button></div>
+<div id="recording-info" class="notice" role="status">尚未导入录制</div><ul id="recording-warnings" class="warnings"></ul></section>
+<section id="correction-section" class="card correction-card module-panel" role="tabpanel" aria-labelledby="module-tab-correction" tabindex="0" hidden>
+<h2 id="correction-heading">录制级零位与方向微调 · 双手共同回放</h2>
+<p>独立调整左右手零位与编码器方向；点击“保存并覆盖原标定”将全局零位与方向写回对应设备标定文件，影响后续使用该标定的录制。局部区间只修正零位，仍只属于当前录制。重新导入同一录制时优先恢复最近保存的零位、方向与区间；也可显式选择原始上传参数或其他匹配标定，从头建立草稿。直接导出仅保存并冻结当前修正，不覆盖设备标定或源文件；目录录制输出 <code>processed.h5</code>，双手采集文件输出同目录 <code>&lt;源文件stem&gt;.processed.h5</code>，均包含两侧三阶段与各自时间轴。</p>
+<p id="correction-source" class="notice">请先在“选择原始子任务”模块导入原始录制</p>
+<section id="correction-loading" class="correction-loading" aria-labelledby="correction-loading-title" hidden>
+<h3 id="correction-loading-title">正在准备共同回放</h3>
+<progress id="correction-loading-progress" max="5" value="0" aria-label="共同回放准备进度"></progress>
+<ol id="correction-loading-steps" class="correction-loading-steps"></ol>
+<p class="hint">进度按实际完成阶段更新，不是下载百分比。视频可解码、模型加载且公共起点对齐后才开放微调；不会改写原始时间戳或将跨设备时钟视为硬同步。</p>
+<button id="correction-loading-retry" hidden>重新准备视频与模型</button>
+</section>
+<div id="correction-sources" class="correction-sources"></div>
+<div class="row"><button id="correction-refresh">刷新原标定列表</button><button id="correction-new" class="primary" disabled>建立草稿</button><button id="correction-save" disabled>保存并覆盖原标定</button><label class="check"><input id="correction-self-collision" type="checkbox">Wuji Hand2 自碰撞（较慢；未勾选可能穿模）</label><button id="correction-export" class="primary" disabled>正式导出全部帧</button></div>
+<div id="correction-error" class="notice error" role="alert" hidden></div>
+<p id="correction-status" class="notice" role="status">请先导入录制。</p>
+<p id="correction-submission" class="notice" role="status" hidden></p>
+<div id="correction-editor" hidden>
+<div class="playback correction-timeline"><div class="row"><button id="correction-prev">上一帧</button><button id="correction-play" class="primary">播放</button><button id="correction-next">下一帧</button><span>按左右合并真实时间戳逐帧导航</span><span id="correction-time" class="mono"></span></div>
+<p id="correction-buffering" class="correction-buffering" role="status" data-visible="false" aria-hidden="true">正在同步画面，缓冲就绪后自动继续。</p>
+<label for="correction-slider">公共相对时间（秒）</label><input id="correction-slider" type="range" min="0" max="0" step="any" value="0"></div>
+<div class="correction-workspace"><div class="correction-layout"><div class="correction-joint-panel">
+<div id="correction-hand-tabs" class="row" role="tablist" aria-label="零位与方向调整手侧"></div>
+<h3>标准 J1～J21 零位增量与方向</h3>
+<p class="hint">滑条 ±180°，步长 0.1°；有效零位按 360° 环绕。</p>
+<p id="correction-direction-hint" class="hint">全局编码器方向：+1 正向，−1 反向，点击切换；作用于当前手全部帧，归零不改变方向。</p>
+<button id="correction-reset-all">当前手全部增量复位为 0°</button>
+<div class="table-wrap correction-table"><table><thead><tr><th>关节 / 来源</th><th>增量（°）</th><th>基础 → 有效</th><th>方向 / 复位</th></tr></thead><tbody id="correction-joints"></tbody></table></div>
+</div><div class="correction-preview">
+<div class="model-heading"><h3>左右手外骨骼预览</h3><button id="correction-reset-view">复位视角</button></div>
+<div class="correction-models">
+<article id="correction-left-model" hidden><h3>左手</h3><div id="correction-left-viewport" class="viewport"></div><p id="correction-left-preview-status" class="model-status" role="status">等待微调草稿</p><p id="correction-left-time" class="mono correction-frame"></p></article>
+<article id="correction-right-model" hidden><h3>右手</h3><div id="correction-right-viewport" class="viewport"></div><p id="correction-right-preview-status" class="model-status" role="status">等待微调草稿</p><p id="correction-right-time" class="mono correction-frame"></p></article>
+</div><p class="hint">拖动旋转 · 滚轮缩放；计算中保留并标注上一有效姿态。</p>
+</div><div class="correction-cameras" aria-label="手套与头部相机">
+<h3>手套与头部 RGB 相机</h3><p class="hint">仅显示左右手套与头部 RGB_left / RGB_right，共四路；各设备按相对起点对照，非硬件精确同步。</p>
+<section id="correction-glove-replay" class="wrist-replay glove-replay" hidden><p id="correction-glove-info" class="notice" role="status"></p><div id="correction-glove-cameras" class="wrist-cameras"></div></section>
+<section id="correction-extra-replay" class="wrist-replay" hidden><p id="correction-extra-info" class="notice" role="status"></p><div id="correction-extra-cameras" class="wrist-cameras"></div></section>
+</div></div></div>
+<p class="hint">“保存”将全局有效零位与编码器方向覆盖写入 config/dataglove/v21/zero/ 下对应的 hand_device.json；完整零位、方向与分帧区间同时保留在 data/corrections 快照。保存后当前草稿不变，重新建立或导入时可从“最近保存的录制修正”完整恢复，不会叠加增量或再次反向。刷新列表不会替换当前草稿基线。原始上传参数仍作为采集角反算依据，也可显式选择它从头建立草稿。直接导出同样自动保存可恢复快照，任务使用点击时的两侧零位与方向，后续编辑不影响任务；原始采集数据始终只读。</p>
+</div>
+</section>
+<section id="calibration-section" class="card module-panel" role="tabpanel" aria-labelledby="module-tab-calibration" tabindex="0" hidden><h2>六步零位与方向标定</h2><div class="row"><label>标定数据来源<select id="calibration-mode"><option value="offline">离线录制模式</option><option value="live">实时手套模式</option></select></label><span id="mode-hint">从录制中选择真实零位区间；不访问硬件。</span></div><p>六组都需要实际摆出指定零位姿态并逐组确认，不会自动捕获。未完成零位的关节仅在预览中按零角处理，不能用于正式处理。</p>
+<div class="row"><button id="new-calibration" disabled>新建标定</button><button id="load-calibration" disabled>载入所选匹配标定 / 预览</button><span id="calibration-status">尚未新建标定</span></div>
+<div id="calibration-editor" hidden>
+<div class="calibration-layout"><div>
+<ol id="groups" class="steps"></ol><h3 id="group-title"></h3><p id="pose-guide" class="notice"></p>
+<div id="offline-window">
+<div class="row"><label>起始帧（包含）<input id="window-start" type="number" min="0" step="1" value="0"></label><label>结束帧（不包含）<input id="window-stop" type="number" min="1" step="1" value="1"></label></div>
+<div class="row"><button id="window-current">以当前帧起取 ≥1.5 秒</button><button id="window-goto">查看起始帧</button></div>
+<p id="window-summary"></p><p class="hint">选窗采用 [start, stop)，stop exclusive。至少 100 帧、时间跨度 ≥1.0 秒；建议 ≥1.5 秒。稳定性、丢帧及连续性由后端严格检查。</p>
+</div><p id="live-capture-hint" class="notice" hidden>请现在摆出本组零位姿态并保持静止。确认后点击采集，只取点击后新到达的 1.5 秒样本，不使用历史帧。</p>
+<label class="check"><input id="pose-confirm" type="checkbox"><span id="pose-confirm-label">我确认所选区间内保持本步骤要求的零位姿态</span></label><button id="capture" class="primary" disabled>采集本步骤零位</button><p id="capture-status" role="status" aria-live="polite"></p>
+</div><div><div class="model-heading"><h3>外骨骼标定预览</h3><button id="reset-preview">复位视角</button></div><div id="preview-viewport" class="viewport"></div><p id="preview-status" class="model-status" role="status">等待原始帧</p><p class="hint">拖动旋转，滚轮缩放，右键平移。方向/零位修改后调用独立预览接口；此处不运行人手或 Wuji 求解。</p></div></div>
+<div id="offline-timeline"><h3>原始录制时间轴</h3><div class="row"><button id="raw-prev">上一帧</button><input id="raw-slider" class="grow" type="range" min="0" max="0" value="0"><button id="raw-next">下一帧</button><label>帧<input id="raw-index" class="short" type="number" min="0" value="0"></label></div><p id="raw-time" class="mono"></p></div>
+<h3>21 通道零位 / 编码器方向</h3><p class="hint">方向 +1 为正向，−1 为反向。行标签使用统一 J1～J21 关节定义，左右手独立映射到物理 CS；零位和方向按该行对应的原始通道读取、保存，不重排原始数据。请对照真实关节运动与预览逐项确认。</p><div class="table-wrap"><table><thead><tr><th>统一关节</th><th>原始通道 / CS</th><th>原始角（°）</th><th>零位（°）</th><th>编码器方向</th></tr></thead><tbody id="channel-values"></tbody></table></div>
+<div class="row save-row"><button id="save-calibration" class="primary">保存完整标定</button><span id="save-status" role="status"></span></div><p>固定保存目录：<code id="calibration-dir"></code>；文件名由手侧与设备号生成。同名文件必须再次明确确认覆盖。</p>
+</div></section>
+<section id="processing-section" class="card module-panel" role="tabpanel" aria-labelledby="module-tab-processing" tabindex="0" hidden><h2>单手离线处理与导出</h2><p>只展示与当前录制手侧、设备号匹配的标定。此处仅提交当前单手；双手同文件导出请使用“零位微调 · 双手回放”模块。处理全部原始帧，各手三个阶段共享该手原始时间轴；失败帧保留为 NaN / valid=false。</p>
+<div class="row"><label class="grow">已有匹配标定<select id="calibration-select" disabled><option value="">请先导入录制</option></select></label><button id="refresh-calibrations">刷新列表</button><label class="check"><input id="job-self-collision" type="checkbox">Wuji Hand2 自碰撞（较慢；未勾选可能穿模）</label><button id="start-job" class="primary" disabled>开始离线处理</button></div>
+<p id="job-status" role="status">提交后可继续编辑，处理进度见“全局导出队列”模块。</p><p>单手离线输出目录：<code id="output-dir"></code>；双手目录录制输出根目录 <code>processed.h5</code>，采集文件输出同目录 <code>&lt;源文件stem&gt;.processed.h5</code>。</p></section>
+<section id="result-replay" class="card module-panel" role="tabpanel" aria-labelledby="module-tab-result" tabindex="0" hidden><h2>左右手同步只读回放</h2><form id="result-form"><div class="row"><label class="grow">processed.h5 文件路径<input id="result-path" required placeholder="/绝对路径/processed.h5" autocomplete="off"></label><button type="submit">打开结果</button></div></form>
+<div class="row"><label class="grow">已生成结果<select id="result-select"><option value="">尚无结果</option></select></label><button id="refresh-results">刷新结果</button><button id="open-selected-result">打开所选结果</button></div>
+<div id="result-info" class="notice" role="status">尚未打开处理结果</div>
+<div class="row"><button id="reset-all">复位所有结果视角</button><a id="download" class="button" hidden>下载整份处理 HDF5</a><span class="hint">单位：关节 rad；关键点 m。只读已有结果，不重新求解。</span></div>
+<div id="playback-controls" class="playback"><div class="row"><button id="prev-frame" disabled>上一时间点</button><button id="play" class="primary" disabled>播放</button><button id="next-frame" disabled>下一时间点</button><label>速度<select id="speed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></label><label>公共时间（秒）<input id="result-seconds" class="short" type="number" min="0" step="any" value="0" disabled></label></div><label for="result-slider">左右手公共相对秒轴</label><input id="result-slider" type="range" min="0" max="0" step="any" value="0" disabled><p id="result-time" class="mono">时间轴未加载</p><p class="hint">各手编码器首帧相对对齐，不是跨设备硬件同步。前后按钮逐个访问两侧真实时间戳的合并时间点，各侧独立选帧，超出该侧录制范围时隐藏；慢请求可跳帧，不等待视频逐帧解码。</p></div>
+<div class="result-hands">
+<section id="result-left" class="result-side" aria-labelledby="result-left-heading" hidden>
+<div class="model-heading"><h3 id="result-left-heading">左手</h3><button id="result-left-reset">复位左手视角</button></div>
+<p id="result-left-info" class="notice" role="status"></p><p id="result-left-time" class="mono result-frame-time" role="status"></p>
+<div class="result-models">
+<article><h4>外骨骼 · URDF 21 关节</h4><div id="result-left-exo-viewport" class="viewport"></div><p id="result-left-exo-status" class="model-status" role="status">未加载</p><details><summary>21 关节数值（rad）</summary><div id="result-left-exo-values" class="values"></div></details></article>
+<article><h4>人手 · 固定参数 21 点</h4><div id="result-left-hand-viewport" class="viewport"></div><p id="result-left-hand-status" class="model-status" role="status">未加载</p><details><summary>21 点坐标（m）</summary><div id="result-left-hand-values" class="values"></div></details></article>
+<article><h4>Wuji Hand2 · 20 关节</h4><div id="result-left-wuji-viewport" class="viewport"></div><p id="result-left-wuji-status" class="model-status" role="status">未加载</p><details><summary>20 关节数值（rad）</summary><div id="result-left-wuji-values" class="values"></div></details></article>
+<section id="result-left-glove-replay" class="wrist-replay result-glove" aria-label="左手 dataglove 相机" hidden><h4>左手 · dataglove 相机</h4><p id="result-left-glove-info" class="notice" role="status"></p><div id="result-left-glove-cameras" class="wrist-cameras"></div></section>
+</div></section>
+<section id="result-right" class="result-side" aria-labelledby="result-right-heading" hidden>
+<div class="model-heading"><h3 id="result-right-heading">右手</h3><button id="result-right-reset">复位右手视角</button></div>
+<p id="result-right-info" class="notice" role="status"></p><p id="result-right-time" class="mono result-frame-time" role="status"></p>
+<div class="result-models">
+<article><h4>外骨骼 · URDF 21 关节</h4><div id="result-right-exo-viewport" class="viewport"></div><p id="result-right-exo-status" class="model-status" role="status">未加载</p><details><summary>21 关节数值（rad）</summary><div id="result-right-exo-values" class="values"></div></details></article>
+<article><h4>人手 · 固定参数 21 点</h4><div id="result-right-hand-viewport" class="viewport"></div><p id="result-right-hand-status" class="model-status" role="status">未加载</p><details><summary>21 点坐标（m）</summary><div id="result-right-hand-values" class="values"></div></details></article>
+<article><h4>Wuji Hand2 · 20 关节</h4><div id="result-right-wuji-viewport" class="viewport"></div><p id="result-right-wuji-status" class="model-status" role="status">未加载</p><details><summary>20 关节数值（rad）</summary><div id="result-right-wuji-values" class="values"></div></details></article>
+<section id="result-right-glove-replay" class="wrist-replay result-glove" aria-label="右手 dataglove 相机" hidden><h4>右手 · dataglove 相机</h4><p id="result-right-glove-info" class="notice" role="status"></p><div id="result-right-glove-cameras" class="wrist-cameras"></div></section>
+</div></section>
+</div>
+<p class="hint">人手阶段为固定参数 21 点模型（MediaPipe 编号），不是实际 MANO pose / shape。相机仅使用各手同设备 dataglove/video.h264；保留视频相对该侧编码器首帧的真实偏移，缺失不影响模型。</p>
+</section>
+<section id="export-queue" class="card module-panel" role="tabpanel" aria-labelledby="module-tab-queue" tabindex="0" hidden>
+<h2 id="export-queue-heading">全局导出任务队列</h2>
+<p>按提交顺序处理，每次运行一个任务。可继续微调其他录制并提交；切换录制或刷新页面不清空任务（服务重启后不保留队列）。双手目录录制输出根目录 <code>processed.h5</code>，双手采集文件输出同目录 <code>&lt;源文件stem&gt;.processed.h5</code>；Wuji Hand2 自碰撞后处理另存带 <code>_wujihand2_collision_</code> 的新文件，不覆盖输入。各手保留真实时间轴。</p>
+<p class="hint">删除排队项会取消执行；运行项需确认“停止并移除”。移除列表项不会删除已生成的 HDF5 文件。</p>
+<form id="export-queue-collision-form"><h3>已有结果补做自碰撞</h3><p class="hint">适用于已微调并导出的单手或双手 HDF5。只重算 Wuji Hand2 自碰撞，保留外骨骼、人手、标定快照与原时间轴；同目录另存带碰撞版本，不覆盖原文件，也不需要重新导入原始录制。</p><div class="row"><label class="grow">已导出 HDF5 文件路径<input id="export-queue-collision-path" required placeholder="/绝对路径/已导出的.processed.h5" autocomplete="off"></label><button id="export-queue-collision-submit" type="submit">补做自碰撞并另存</button></div></form>
+<div class="row"><button id="export-queue-refresh" type="button">刷新任务队列</button></div>
+<p id="export-queue-status" class="notice" role="status">正在读取全局任务…</p>
+<p id="export-queue-action" class="notice" role="status" hidden></p>
+<p id="export-queue-empty" hidden>暂无导出任务。</p>
+<div id="export-queue-list"></div>
+</section>
+</main><footer>所有计算与资产位于本独立项目；实体手套仅采集编码器，不写板端标定、不控制机器人。</footer><script type="module" src="/src/main.js"></script>
+</body></html>

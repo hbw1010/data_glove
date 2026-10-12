@@ -1,0 +1,11 @@
+.correction-segments { grid-column: 1 / -1; min-width: 0; margin-top: .75rem; padding-top: .75rem; border-top: 1px solid #cbd5e1; }
+.correction-segments [hidden] { display: none !important; }
+.correction-segments input[type="number"] { width: 11rem; }
+.correction-segments input[aria-invalid="true"] { outline: 2px solid #b91c1c; }
+.correction-selecting-segment { cursor: crosshair; outline: 2px solid #d97706; }
+.correction-segment-markers { position: relative; height: 1.8rem; margin: .7rem 8px; border-bottom: 2px solid #94a3b8; }
+.correction-segment-markers:empty { display: none; }
+.correction-segment-markers button { position: absolute; min-width: 5px; height: 1.65rem; padding: 0; overflow: hidden; border-radius: 3px; background: #dbeafe; border: 1px solid #2563eb; color: #1e3a8a; }
+#correction-segment-list { margin: .5rem 0; padding-left: 1.4rem; max-height: 14rem; overflow-y: auto; }
+#correction-segment-list li { margin: .35rem 0; }
+#correction-segment-list button { margin-left: .4rem; }

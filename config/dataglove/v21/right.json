@@ -1,0 +1,173 @@
+{
+  "version": 1,
+  "hand": "right",
+  "channels": 21,
+  "angle_unit": "degree",
+  "length_unit": "millimeter",
+  "input_angle_unit": "degree",
+  "output_angle_unit": "radian",
+  "ready": true,
+  "directions_verified": true,
+  "description": "v2.1 右手机械参数；网关 raw 绝对角先应用本地六步标定文件的逐 J 零位与方向，再经四连杆和 URDF 映射。2026-09-24 用户确认实体手套实时仿真通过，并确认现场安全、授权右手真机使能与回零试动；此次确认不代表完成机械尺寸计量或全工况真机验收。",
+  "disabled_joint_names": [],
+  "groups": [
+    {
+      "name": "four_finger_pip",
+      "description": "食指、中指、无名指、小指的 PIP 共用参数；L_AD、L_CD、theta_A0 按数据手套 v2.1 URDF 网格上的铰点定，L_AB、L_BC 沿用上一版，待结构确认",
+      "channels": [
+        "J12",
+        "J13",
+        "J14",
+        "J15"
+      ],
+      "input_directions": {
+        "J12": -1,
+        "J13": -1,
+        "J14": -1,
+        "J15": -1
+      },
+      "parameters": {
+        "L_AD": 13.865,
+        "L_AB": 13.5,
+        "L_BC": 22.56,
+        "L_CD": 13.463,
+        "theta_A0_deg": -176.4,
+        "branch": -1
+      }
+    },
+    {
+      "name": "four_finger_dip",
+      "description": "食指、中指、无名指、小指的 DIP 共用参数；L_AD、L_CD、theta_A0 按数据手套 v2.1 URDF 网格上的铰点定，L_AB、L_BC 沿用上一版，待结构确认",
+      "channels": [
+        "J17",
+        "J18",
+        "J19",
+        "J20"
+      ],
+      "input_directions": {
+        "J17": -1,
+        "J18": -1,
+        "J19": -1,
+        "J20": -1
+      },
+      "parameters": {
+        "L_AD": 12.349,
+        "L_AB": 11.5,
+        "L_BC": 20.63,
+        "L_CD": 13.2,
+        "theta_A0_deg": 177.8,
+        "branch": -1
+      }
+    },
+    {
+      "name": "thumb_ip",
+      "description": "thumb_ip_joint 单独参数；L_AD、L_CD、theta_A0 按数据手套 v2.1 URDF 网格上的铰点定，L_AB、L_BC 沿用上一版，待结构确认",
+      "channels": [
+        "J16"
+      ],
+      "input_directions": {
+        "J16": -1
+      },
+      "parameters": {
+        "L_AD": 13.865,
+        "L_AB": 13.5,
+        "L_BC": 22.14,
+        "L_CD": 16.008,
+        "theta_A0_deg": -161.3,
+        "branch": -1
+      }
+    }
+  ],
+  "joints": [
+    {
+      "joint_name": "thumb_cmc_flex_joint",
+      "direction": 1,
+      "scale": 0.9
+    },
+    {
+      "joint_name": "thumb_cmc_abd_joint",
+      "direction": -1
+    },
+    {
+      "joint_name": "thumb_mcp_joint",
+      "direction": 1
+    },
+    {
+      "joint_name": "thumb_ip_joint",
+      "direction": -1,
+      "scale": 1.0
+    },
+    {
+      "joint_name": "index_mcp_abd_joint",
+      "direction": -1
+    },
+    {
+      "joint_name": "index_mcp_flex_joint",
+      "direction": 1,
+      "scale": 1.0
+    },
+    {
+      "joint_name": "index_pip_joint",
+      "direction": -1
+    },
+    {
+      "joint_name": "index_dip_joint",
+      "direction": -1
+    },
+    {
+      "joint_name": "middle_mcp_abd_joint",
+      "direction": -1
+    },
+    {
+      "joint_name": "middle_mcp_flex_joint",
+      "direction": 1,
+      "scale": 1.0
+    },
+    {
+      "joint_name": "middle_pip_joint",
+      "direction": -1
+    },
+    {
+      "joint_name": "middle_dip_joint",
+      "direction": -1
+    },
+    {
+      "joint_name": "ring_mcp_abd_joint",
+      "direction": -1
+    },
+    {
+      "joint_name": "ring_mcp_flex_joint",
+      "direction": 1,
+      "scale": 1.0
+    },
+    {
+      "joint_name": "ring_pip_joint",
+      "direction": -1
+    },
+    {
+      "joint_name": "ring_dip_joint",
+      "direction": -1
+    },
+    {
+      "joint_name": "pinky_cmc_joint",
+      "direction": 1
+    },
+    {
+      "joint_name": "pinky_mcp_abd_joint",
+      "direction": -1
+    },
+    {
+      "joint_name": "pinky_mcp_flex_joint",
+      "direction": 1,
+      "scale": 1.0
+    },
+    {
+      "joint_name": "pinky_pip_joint",
+      "direction": -1
+    },
+    {
+      "joint_name": "pinky_dip_joint",
+      "direction": -1
+    }
+  ]
+}

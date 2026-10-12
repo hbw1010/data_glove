@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>骨架对照 · 只读诊断</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0c1422;color:#e7edf6;font:15px/1.5 system-ui,sans-serif}main{max-width:1700px;margin:auto;padding:24px}h1{font-size:26px;margin:0 0 6px}p{margin:6px 0;color:#a8b9cd}.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:18px 0}select,button{font:inherit;color:#e7edf6;background:#23344b;border:1px solid #47617c;border-radius:6px;padding:7px 12px;cursor:pointer}label{display:flex;align-items:center;gap:6px}.panels{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.panel{background:#142135;border:1px solid #2f435d;border-radius:9px;overflow:hidden}.heading{padding:14px 16px 8px}.heading h2{font-size:18px;margin:0}.heading p{font-size:13px;min-height:40px}.viewport{height:490px;position:relative}.viewport canvas{display:block;width:100%;height:100%;touch-action:none}.metric{padding:12px 16px;background:#192940;border-top:1px solid #30435a;font-size:14px;min-height:76px}.metric b{font-size:20px;color:#ffda8c}.legend{display:flex;gap:20px;flex-wrap:wrap;padding:14px 0}.chip:before{content:'';display:inline-block;width:22px;height:4px;background:var(--c);margin-right:7px;vertical-align:middle}.note{border-left:3px solid #e9b864;padding:8px 12px;background:#1b293c;color:#d4deeb}.hint{font-size:13px}details{margin-top:14px}table{border-collapse:collapse;font-size:13px;width:100%;margin-top:10px}th,td{border-bottom:1px solid #33465c;padding:5px;text-align:right}th:first-child,td:first-child{text-align:left}.error{color:#ff8891}@media(max-width:1000px){.panels{grid-template-columns:1fr}.viewport{height:420px}}
+</style></head>
+<body><main>
+<h1>原始拟合骨架 vs 当前输出骨架</h1>
+<p>同一帧、同一坐标、同一比例。这里只展示现有算法，不修改模型或录制。</p>
+<div class="toolbar">
+<label>手侧 <select id="side"><option value="right">右手</option><option value="left">左手</option></select></label>
+<label>输入姿态 <select id="pose"></select></label>
+<button id="front">掌面视角</button><button id="oblique">斜视角</button><button id="sideView">侧面视角</button>
+<label><input id="mechanical" type="checkbox">叠加 URDF 机械观测（灰色）</label>
+</div>
+<div class="panels">
+<section class="panel"><div class="heading"><h2>A · 拟合器原始骨架</h2><p>JointRetargetPipeline 输出<br>未执行 CMC 中点补偿</p></div><div class="viewport" id="a"></div><div class="metric" id="ma"></div></section>
+<section class="panel"><div class="heading"><h2>B · 当前显示 / 导出骨架</h2><p>Engine.step 输出<br>P₁ = (P₀ + P₂) / 2</p></div><div class="viewport" id="b"></div><div class="metric" id="mb"></div></section>
+<section class="panel"><div class="heading"><h2>C · 两套骨架重叠</h2><p>蓝色：原始拇指链；橙色：补偿后拇指链<br>红色虚线：1 号 CMC 的位移</p></div><div class="viewport" id="c"></div><div class="metric" id="mc"></div></section>
+</div>
+<div class="legend"><span class="chip" style="--c:#ffcc75">拇指</span><span class="chip" style="--c:#66ccff">食指</span><span class="chip" style="--c:#ba9dff">中指</span><span class="chip" style="--c:#6ce0ba">无名指</span><span class="chip" style="--c:#ff92b3">小指</span><span>0 腕 · 1 CMC · 2 MCP · 3 IP · 4 拇指尖</span></div>
+<div class="note" id="summary"></div>
+<p class="hint">在任一视图拖动可同步旋转，滚轮同步缩放。点号沿用 MediaPipe；这里没有运行 MediaPipe 检测。灰色点只是机械观测，不代表解剖真值。</p>
+<p class="hint" id="source"></p>
+<details><summary>查看本帧拇指坐标与 URDF 输入（只读）</summary><div id="coordinates"></div><pre id="joints"></pre></details>
+<p id="error" class="error"></p>
+</main>
+<script type="module">
+// 一次性只读诊断页：对照现有管线的两份真实输出，不提供替代骨架或新参数。
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+const data = await fetch('./skeleton-comparison-prototype.json').then(r => r.json());
+const $ = id => document.getElementById(id);
+const edges = [[0,1],[0,5],[9,13],[13,17],[5,9],[0,17],[1,2],[2,3],[3,4],[5,6],[6,7],[7,8],[9,10],[10,11],[11,12],[13,14],[14,15],[15,16],[17,18],[18,19],[19,20]];
+const colors = [0xffcc75,0x66ccff,0xba9dff,0x6ce0ba,0xff92b3];
+let syncing = false, axes, center, span, caseData;
+const sphere = new THREE.SphereGeometry(0.0017,12,8);
+const views = ['a','b','c'].map(id => {
+  const element = $(id), scene = new THREE.Scene(); scene.background = new THREE.Color('#111d30');
+  const camera = new THREE.OrthographicCamera(-.1,.1,.1,-.1,.0001,10);
+  const renderer = new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));element.append(renderer.domElement);
+  const controls = new OrbitControls(camera,renderer.domElement);controls.enablePan = true;
+  const root = new THREE.Group();scene.add(root);
+  const view = {element,scene,camera,renderer,controls,root};
+  controls.addEventListener('change',()=>{
+    if(syncing)return;syncing=true;
+    for(const other of views){if(other===view)continue;other.camera.position.copy(camera.position);other.camera.quaternion.copy(camera.quaternion);other.camera.up.copy(camera.up);other.camera.zoom=camera.zoom;other.camera.updateProjectionMatrix();other.controls.target.copy(controls.target);other.controls.update();}
+    syncing=false;render();
+  });
+  return view;
+});
+function render(){for(const v of views)v.renderer.render(v.scene,v.camera);}
+function segment(root,a,b,color,dashed=false,width=0.00075){
+  const start=new THREE.Vector3(...a),end=new THREE.Vector3(...b),delta=end.clone().sub(start);
+  if(dashed){const line=new THREE.Line(new THREE.BufferGeometry().setFromPoints([start,end]),new THREE.LineDashedMaterial({color,dashSize:.002,gapSize:.001}));line.computeLineDistances();root.add(line);return;}
+  const obj=new THREE.Mesh(new THREE.CylinderGeometry(width,width,delta.length(),8),new THREE.MeshBasicMaterial({color}));obj.position.copy(start).add(end).multiplyScalar(.5);obj.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());root.add(obj);
+}
+function label(root,position,text,color='#e9f1ff'){
+  const canvas=document.createElement('canvas');canvas.width=128;canvas.height=64;const ctx=canvas.getContext('2d');
+  ctx.font='bold 32px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineWidth=8;ctx.strokeStyle='#111d30';ctx.strokeText(text,64,32);ctx.fillStyle=color;ctx.fillText(text,64,32);
+  const obj=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(canvas),depthTest:false}));obj.position.fromArray(position).addScaledVector(axes.x,.0055);obj.scale.set(.022,.011,1);obj.renderOrder=10;root.add(obj);
+}
+function skeleton(root,points,{color=null,numbers=true,onlyThumb=false,thin=false}={}){
+  for(const [a,b] of edges){if(onlyThumb&&!(a<5&&b<5))continue;segment(root,points[a],points[b],color??(a===0&&b!==1?0xaab9ce:colors[Math.max(0,Math.floor((b-1)/4))]),false,thin?.00035:.00075);}
+  points.forEach((p,i)=>{if(onlyThumb&&i>4)return;const shade=color??(i===0?0xffffff:colors[Math.floor((i-1)/4)]);const mesh=new THREE.Mesh(sphere,new THREE.MeshBasicMaterial({color:shade}));mesh.position.fromArray(p);if(thin)mesh.scale.setScalar(.65);root.add(mesh);if(numbers)label(root,p,String(i));});
+}
+function clear(root){while(root.children.length){const child=root.children[0];root.remove(child);child.geometry!==sphere&&child.geometry?.dispose();child.material?.map?.dispose();child.material?.dispose();}}
+function resize(){for(const v of views){const w=v.element.clientWidth,h=v.element.clientHeight;v.renderer.setSize(w,h,false);const half=span/2;v.camera.left=-half*w/h;v.camera.right=half*w/h;v.camera.top=half;v.camera.bottom=-half;v.camera.updateProjectionMatrix();}render();}
+function orient(kind='front'){
+  const direction=axes.z.clone();if(kind==='oblique')direction.addScaledVector(axes.x,.8).addScaledVector(axes.y,-.35);if(kind==='side')direction.copy(axes.x).addScaledVector(axes.z,.04);
+  syncing=true;for(const v of views){v.camera.up.copy(axes.y);v.camera.position.copy(center).addScaledVector(direction.normalize(),.8);v.camera.zoom=1;v.controls.target.copy(center);v.camera.lookAt(center);v.controls.update();v.camera.updateProjectionMatrix();}syncing=false;render();
+}
+function update(){
+  const hand=data.hands[$('side').value];caseData=hand.cases[Number($('pose').value)||0];
+  const r=hand.canonical_rotation;axes={x:new THREE.Vector3(r[0][0],r[1][0],r[2][0]),y:new THREE.Vector3(r[0][1],r[1][1],r[2][1]),z:new THREE.Vector3(r[0][2],r[1][2],r[2][2])};
+  const box=new THREE.Box3().setFromPoints([...caseData.fitted,...caseData.exported,...caseData.mechanical].map(p=>new THREE.Vector3(...p)));center=box.getCenter(new THREE.Vector3());span=box.getSize(new THREE.Vector3()).length()*1.02;
+  for(const v of views)clear(v.root);
+  skeleton(views[0].root,caseData.fitted);skeleton(views[1].root,caseData.exported);
+  skeleton(views[2].root,caseData.fitted,{color:0x70849d,numbers:false,thin:true});
+  skeleton(views[2].root,caseData.fitted,{color:0x62b7ff,onlyThumb:true,numbers:false});
+  skeleton(views[2].root,caseData.exported,{color:0xffb45e,onlyThumb:true,numbers:false});
+  segment(views[2].root,caseData.fitted[1],caseData.exported[1],0xff617e,true);
+  label(views[2].root,caseData.fitted[1],'1 A','#62b7ff');label(views[2].root,caseData.exported[1],'1 B','#ffb45e');
+  for(const i of [0,2,3,4])label(views[2].root,caseData.fitted[i],String(i));
+  if($('mechanical').checked)for(const v of views)skeleton(v.root,caseData.mechanical,{color:0x87929f,numbers:false,thin:true});
+  $('ma').innerHTML=`CMC → MCP：<b>${caseData.original_lengths_mm[0].toFixed(2)} mm</b><br>MCP → IP → 指尖：${caseData.original_lengths_mm.slice(1).map(n=>n.toFixed(2)).join(' / ')} mm`;
+  $('mb').innerHTML=`CMC → MCP：<b>${caseData.exported_lengths_mm[0].toFixed(2)} mm</b><br>MCP → IP → 指尖：${caseData.exported_lengths_mm.slice(1).map(n=>n.toFixed(2)).join(' / ')} mm`;
+  $('mc').innerHTML=`CMC 位移：<b>${caseData.cmc_displacement_mm.toFixed(2)} mm</b><br>其余 20 个点坐标一致`;
+  $('summary').textContent='当前差异只有 1 号 CMC：A 是原运动链求解结果；B 在求解后移动 CMC，使 0—1—2 强制共线。B 不是另一套独立求解的人手模型。';
+  $('source').textContent=`输入来源：${data.description} 当前：${$('side').selectedOptions[0].text} / ${caseData.label}。坐标单位为米；数值面板换算为毫米。`;
+  $('coordinates').innerHTML='<table><tr><th>点</th><th>A XYZ / mm</th><th>B XYZ / mm</th><th>机械观测 XYZ / mm</th></tr>'+caseData.fitted.slice(0,5).map((p,i)=>`<tr><td>${i}</td>${[p,caseData.exported[i],caseData.mechanical[i]].map(v=>'<td>'+v.map(n=>(n*1000).toFixed(2)).join(', ')+'</td>').join('')}</tr>`).join('')+'</table>';
+  $('joints').textContent=caseData.joint_names.map((name,i)=>`${name}: ${(caseData.qpos_rad[i]*180/Math.PI).toFixed(3)}°`).join('\n');
+  resize();orient();window.skeletonComparison={caseData,views};
+}
+for(const [i,item] of data.hands.right.cases.entries())$('pose').add(new Option(item.label,i));
+$('side').onchange=update;$('pose').onchange=update;$('mechanical').onchange=update;
+$('front').onclick=()=>orient('front');$('oblique').onclick=()=>orient('oblique');$('sideView').onclick=()=>orient('side');
+window.addEventListener('resize',resize);update();window.comparisonReady=true;
+</script></body></html>

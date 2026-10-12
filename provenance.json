@@ -1,0 +1,1000 @@
+{
+  "schema": "glove_v21_standalone_provenance",
+  "schema_version": 1,
+  "source_root": "/home/boen/hand/data_glove_wuji_teleop",
+  "source_access": "只读复制；未运行、导入、构建或修改原项目；运行时不依赖该路径。",
+  "licenses": [
+    {
+      "component": "官方 Wuji retargeting 纯计算子集",
+      "license": "MIT",
+      "file": "licenses/wuji-retargeting-LICENSE",
+      "copyright": "Copyright (c) 2025 WujiHand Technologies"
+    },
+    {
+      "component": "官方 Wuji Hand2 左右 URDF 与所引用网格",
+      "license": "MIT",
+      "file": "licenses/wuji-description-LICENSE",
+      "copyright": "Copyright (c) 2025 Wuji Technology"
+    },
+    {
+      "component": "V21 左右 URDF 与所引用网格",
+      "license": "BSD（package.xml 声明，未发现独立 LICENSE 全文）",
+      "files": [
+        "licenses/v21-left-package.xml",
+        "licenses/v21-right-package.xml"
+      ],
+      "redistribution_note": "原声明未注明 BSD 变体、版权人或许可全文；公开再分发前须向提供方确认，不能假定其他组件 MIT 许可覆盖。"
+    },
+    {
+      "component": "本地 EncoderKinematics / UrdfMapping / UrdfZero / skeleton / morphology / 配置 / DGST USB协议",
+      "license": "源项目未提供根 LICENSE，授权状态未声明",
+      "redistribution_note": "按用户指示在本机独立项目内复制；不可据此宣称具备公开再分发授权。"
+    }
+  ],
+  "changes": [
+    "只复制 EncoderKinematics、UrdfMapping、Zero、GloveLandmarkAdapter、HandSkeleton 的计算部分、ManoMorphologyFitter、ThumbKinematics、JointRetargetPipeline；删除网络、设备帧、GUI/scene、旧路径依赖。",
+    "V21 package:// 网格引用改为项目内相对路径；仅复制被 URDF 引用的实文件，不使用软链。",
+    "保留 V21 机构原始 ready=false / directions_verified=false 标记；使用现有数值参数，不声称经过设备方向或全工况验收。",
+    "左右 V21/Hand2 分别独立 URDF、机构配置、官方 IK 配置；左手单独手型身份配置保留原算法 X 镜像规范化和同一右手规范几何。",
+    "官方配置仅保留优化器和重定向参数，模型路径改为本项目 assets，移除设备和实时仿真入口；Engine 明确关闭额外低通。",
+    "仅保留官方 AdaptiveOptimizerAnalytical 及其必要依赖；NLopt 异常、负状态、非有限结果/目标、越限结果均抛出，不再返回初始角伪造成功；全部检查成功才提交 warm-start。",
+    "Retargeter 对关键点/变换/输出做有限性检查，异常恢复 warm-start 和低通状态；Engine 保留上游成功阶段，失败阶段为 None 并给中文错误。",
+    "未复制任何设备零位、既有录制、机器人SDK、机器人控制或旧环境；新增实时入口仅本地复制DGST USB接收协议，板端标定只读描述。",
+    "DGST USB元数据和四端点接收独立随附；不带旧HTTP/TCP入口，不调用原网关。视频独立排空但不保存，编码器线上角度和元数据原样录制。",
+    "本项目新增SelfCollision，以完整collision STL凸包和5个原始STL二轴装配对构建295对SLSQP间隙硬约束；提交及滤波后独立校验，失败回滚。默认0.5mm，仅左拇指掌部装配对按CAD实际可达间隙明确覆盖为0.05mm，策略随新结果保存。",
+    "按用户要求在拟合后以腕点和MCP中点重建1号拇指CMC，其余20点不变；显示、导出与Hand2重定向使用同一套21点，网页采用MediaPipe标准编号和HAND_CONNECTIONS，不隐藏CMC或使用曲线平滑。该点为几何估计，坐标仍为原有米制局部坐标，非MediaPipe检测结果。"
+  ],
+  "local_additions": [
+    {
+      "path": "vendor/wuji-retargeting/wuji_retargeting/self_collision.py",
+      "sha256": "376e37a19400716dac65f49e254dcb50f8ee3d313560807366e209caba12411b",
+      "origin": "本项目原创碰撞约束模块；非源项目复制文件"
+    }
+  ],
+  "coordinate_contract": {
+    "keypoint_order": [
+      "wrist",
+      "thumb_cmc",
+      "thumb_mcp",
+      "thumb_ip",
+      "thumb_tip",
+      "index_mcp",
+      "index_pip",
+      "index_dip",
+      "index_tip",
+      "middle_mcp",
+      "middle_pip",
+      "middle_dip",
+      "middle_tip",
+      "ring_mcp",
+      "ring_pip",
+      "ring_dip",
+      "ring_tip",
+      "pinky_mcp",
+      "pinky_pip",
+      "pinky_dip",
+      "pinky_tip"
+    ],
+    "keypoint_unit": "meter",
+    "joint_unit": "radian",
+    "frame": "对应手侧 V21 URDF 根/世界坐标系，固定腕部原点；不是相机坐标或官方 IK 内部腕系。左手沿世界 X 镜像到右手规范手型再镜像返回。",
+    "morphology": "固定参数化 MANO 拓扑骨架，不包含授权 MANO 网格或个人形状参数。"
+  },
+  "dependencies": {
+    "python": ">=3.12,<3.13",
+    "numpy": ">=1.26,<3",
+    "scipy": ">=1.11,<2",
+    "mujoco": ">=3.6,<4",
+    "pinocchio": ">=3.8,<4 (conda-forge)",
+    "nlopt": ">=2.7,<3",
+    "pyyaml": ">=6,<7",
+    "libusb": ">=1.0.27,<2 (conda-forge)",
+    "adbutils": ">=2.9,<3 (PyPI平台wheel，内含ADB二进制)"
+  },
+  "files": [
+    {
+      "source": "src/data_glove_wuji_teleop/adapters/glove/usb_transport.py",
+      "destination": "src/glove_calibrate/usb/usb_transport.py",
+      "source_sha256": "798d6194d0fd18703566b25c5b411503bdbd5bf71abf7e94c285f98d6cc8fb9f",
+      "sha256": "798d6194d0fd18703566b25c5b411503bdbd5bf71abf7e94c285f98d6cc8fb9f",
+      "modified": false
+    },
+    {
+      "source": "src/data_glove_wuji_teleop/adapters/glove/usb_stream.py",
+      "destination": "src/glove_calibrate/usb/usb_stream.py",
+      "source_sha256": "12ba54620f89069f14ae5d9f7709d2880197595f6c56f35afb3edfd1d936a7df",
+      "sha256": "e1bba04dd4e2240d7cd9196674ad1acd0311761ccd42a90fcc72fdbb04646326",
+      "modified": true
+    },
+    {
+      "source": "src/data_glove_wuji_teleop/adapters/glove/dgst_protocol.py",
+      "destination": "src/glove_calibrate/usb/dgst_protocol.py",
+      "source_sha256": "66e23f7a07ac64c43bfeed2b64cd0b189596564e9de2d20b36109a28601ee2ec",
+      "sha256": "9d8022715606eaed8741beb7b772a69eca01f31664ad2e1fa902d1af8af47736",
+      "modified": true
+    },
+    {
+      "source": "src/data_glove_wuji_teleop/adapters/glove/encoder_kinematics.py",
+      "destination": "src/glove_calibrate/core/encoder_kinematics.py",
+      "source_sha256": "565be515517d93bdd2502fad88313bf8263e183b77f5a28910956246429dba42",
+      "sha256": "e23f1801e1a414ce74b87eca32a30e1ae0d8cfbdf8e5a887f56e295edeeec908",
+      "modified": true
+    },
+    {
+      "source": "src/data_glove_wuji_teleop/profiles/dataglove/urdf_mapping.py",
+      "destination": "src/glove_calibrate/core/urdf_mapping.py",
+      "source_sha256": "52926937219a08b53ad2612d09323b34b4bb912141b6638707b50e60d31709b1",
+      "sha256": "116c4aa83ceda4ae778dc0b905e03193cfc190eabaabe57a210b273c7d67273a",
+      "modified": true
+    },
+    {
+      "source": "src/data_glove_wuji_teleop/profiles/dataglove/urdf_zero.py",
+      "destination": "src/glove_calibrate/core/urdf_zero.py",
+      "source_sha256": "37e91c2b80c2183f8206000fe4dac8635114618bc36f4175060bf105df35f6bd",
+      "sha256": "1b4819f91ead8079fa0a41e4295fd83e84239c7f3204b016a1b19c1302aced5c",
+      "modified": true
+    },
+    {
+      "source": "src/data_glove_wuji_teleop/adapters/retargeting/mano_morphology.py",
+      "destination": "src/glove_calibrate/core/mano_morphology.py",
+      "source_sha256": "653b0f8c08a97e207a2d17cec6f6f280f8e89d8c6dd1ed4a8582b6c47ad1e693",
+      "sha256": "85b10d8d890daa8783fe65e972f1790554e2223663446c46a515d178d9f2879e",
+      "modified": true
+    },
+    {
+      "source": "src/data_glove_wuji_teleop/adapters/retargeting/thumb_kinematics.py",
+      "destination": "src/glove_calibrate/core/thumb_kinematics.py",
+      "source_sha256": "f62d10043c35ef8d507bad4dfe5b2573a6798d5fbf1ae68a6d4a879362ee2489",
+      "sha256": "f62d10043c35ef8d507bad4dfe5b2573a6798d5fbf1ae68a6d4a879362ee2489",
+      "modified": false
+    },
+    {
+      "source": "src/data_glove_wuji_teleop/adapters/retargeting/glove_landmarks.py",
+      "destination": "src/glove_calibrate/core/glove_landmarks.py",
+      "source_sha256": "39cabac69a11cafec8ea23f36c8809ff2421f894198030533082ec58c793e513",
+      "sha256": "6e2d279f49d50181d337bc360acda36c5a75671bd92cbafb416be0409df909f2",
+      "modified": true
+    },
+    {
+      "source": "src/data_glove_wuji_teleop/adapters/retargeting/joint_pipeline.py",
+      "destination": "src/glove_calibrate/core/joint_pipeline.py",
+      "source_sha256": "8cc6a6668e850ab1eeff1c6321a31ee7f29baa86aa52038ce7536989cb4fcab6",
+      "sha256": "eb003582b09f8e4bdd62d1b5b36210e2f3cab5203ee9cea489b34b8eadcf1f20",
+      "modified": true
+    },
+    {
+      "source": "src/data_glove_wuji_teleop/adapters/simulation/dataglove_skeleton.py",
+      "destination": "src/glove_calibrate/core/dataglove_skeleton.py",
+      "source_sha256": "3eaf957fe56765b4bb3b8f24a615107208eadddd76aa6e9d2f3eeb40c2cbada7",
+      "sha256": "a7f5741dbb972e716b967fb0f40d58a8f1771d3f0c07ff6a6a50f82b1a9fbe6c",
+      "modified": true
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/index_mcp_abd_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/index_mcp_abd_link.STL",
+      "source_sha256": "f36a884c52318285a075c0b5b87aac18f32b4bfed60b1b1ec33ba85fa2476d22",
+      "sha256": "f36a884c52318285a075c0b5b87aac18f32b4bfed60b1b1ec33ba85fa2476d22",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/index_mcp_flex_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/index_mcp_flex_link.STL",
+      "source_sha256": "ee7f4ac4eab0c225ffae64dd970621a2e3b720a14aea5cc8fa2e367379e89397",
+      "sha256": "ee7f4ac4eab0c225ffae64dd970621a2e3b720a14aea5cc8fa2e367379e89397",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/index_pip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/index_pip_link.STL",
+      "source_sha256": "2eb05998e11f3e482f2a70983ab26f186ea7366d956a194b3b9273539cf5faa5",
+      "sha256": "2eb05998e11f3e482f2a70983ab26f186ea7366d956a194b3b9273539cf5faa5",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/middle_mcp_abd_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/middle_mcp_abd_link.STL",
+      "source_sha256": "cebb687f0f414a1056bfdbf87b01eade03a01e759f7b34e88869d756ba71e25a",
+      "sha256": "cebb687f0f414a1056bfdbf87b01eade03a01e759f7b34e88869d756ba71e25a",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/middle_mcp_flex_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/middle_mcp_flex_link.STL",
+      "source_sha256": "49d1c507dcf715cd65bc5794275cf2bd01e847c7ca097c450c8c7c66eb6ce8fd",
+      "sha256": "49d1c507dcf715cd65bc5794275cf2bd01e847c7ca097c450c8c7c66eb6ce8fd",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/middle_pip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/middle_pip_link.STL",
+      "source_sha256": "e5402046be60e74fed63be1cd47eb1cb58c43dc1bf966bc94609bfa07258ea42",
+      "sha256": "e5402046be60e74fed63be1cd47eb1cb58c43dc1bf966bc94609bfa07258ea42",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/pinky_cmc_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/pinky_cmc_link.STL",
+      "source_sha256": "d25169664c4eab8617433809e9d6e5e61ef5f56f83f42593f6615724e4f44298",
+      "sha256": "d25169664c4eab8617433809e9d6e5e61ef5f56f83f42593f6615724e4f44298",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/pinky_mcp_abd_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/pinky_mcp_abd_link.STL",
+      "source_sha256": "16ca7ddf6aec3bea20b8908107c6709f6b83b56e631f2051d789721b11e575a6",
+      "sha256": "16ca7ddf6aec3bea20b8908107c6709f6b83b56e631f2051d789721b11e575a6",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/pinky_mcp_flex_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/pinky_mcp_flex_link.STL",
+      "source_sha256": "4d160659f902b460c3934174574cdc3559d9298c874e4ee46e436e19cd032ad2",
+      "sha256": "4d160659f902b460c3934174574cdc3559d9298c874e4ee46e436e19cd032ad2",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/pinky_pip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/pinky_pip_link.STL",
+      "source_sha256": "6fb7a417bba43f12497862ed5dc1549c8d2d30cbf28150dd9483b9341f6f9ea2",
+      "sha256": "6fb7a417bba43f12497862ed5dc1549c8d2d30cbf28150dd9483b9341f6f9ea2",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/ring_mcp_abd_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/ring_mcp_abd_link.STL",
+      "source_sha256": "2996ea8236934351d2cc192c993f1642b06aa9f25096872dd981abcacdf69274",
+      "sha256": "2996ea8236934351d2cc192c993f1642b06aa9f25096872dd981abcacdf69274",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/ring_mcp_flex_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/ring_mcp_flex_link.STL",
+      "source_sha256": "d8afbc6c29682f71fecbbd198ba550becd2e77972bde2ccfe7dbb2e72b926f2c",
+      "sha256": "d8afbc6c29682f71fecbbd198ba550becd2e77972bde2ccfe7dbb2e72b926f2c",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/ring_pip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/ring_pip_link.STL",
+      "source_sha256": "45101a506687fe266fab10f6f5c9d81d52e00e979fb8efe44b1e1583bc3ce951",
+      "sha256": "45101a506687fe266fab10f6f5c9d81d52e00e979fb8efe44b1e1583bc3ce951",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/thumb_cmc_abd_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/thumb_cmc_abd_link.STL",
+      "source_sha256": "abe2c8cba51050e72493796be33cb3702b9efd4bcdeeac030fea54aa23249ccf",
+      "sha256": "abe2c8cba51050e72493796be33cb3702b9efd4bcdeeac030fea54aa23249ccf",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/thumb_cmc_flex_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/thumb_cmc_flex_link.STL",
+      "source_sha256": "419af5961b98639e540130d5cec0042da9cf52a5362f02d362738a7568abd5a6",
+      "sha256": "419af5961b98639e540130d5cec0042da9cf52a5362f02d362738a7568abd5a6",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/thumb_mcp_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/deduplicated/thumb_mcp_link.STL",
+      "source_sha256": "845f93b409d10081cd8840b6aea7bb81d875447eb5010c63c86e684a39ff2508",
+      "sha256": "845f93b409d10081cd8840b6aea7bb81d875447eb5010c63c86e684a39ff2508",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/index_dip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/index_dip_link.STL",
+      "source_sha256": "b93441d895ec11f2e8240e9437e64f354e86103cda0d12d936c9f2524dadb2a4",
+      "sha256": "b93441d895ec11f2e8240e9437e64f354e86103cda0d12d936c9f2524dadb2a4",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/middle_dip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/middle_dip_link.STL",
+      "source_sha256": "d9cc9a63bc75526538f61200ab629b98230abd0b6e1814db615412cacee9a35c",
+      "sha256": "d9cc9a63bc75526538f61200ab629b98230abd0b6e1814db615412cacee9a35c",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/pinky_dip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/pinky_dip_link.STL",
+      "source_sha256": "9d5fb3e560242fed74553151bc0bba6edd660a4ca55074c6215129f7e7cf541a",
+      "sha256": "9d5fb3e560242fed74553151bc0bba6edd660a4ca55074c6215129f7e7cf541a",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/ring_dip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/ring_dip_link.STL",
+      "source_sha256": "1203c488288caa5e11e3ab8ddbdbf4367bb53588a116f59eaa6f5be1c252c124",
+      "sha256": "1203c488288caa5e11e3ab8ddbdbf4367bb53588a116f59eaa6f5be1c252c124",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/thumb_ip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/thumb_ip_link.STL",
+      "source_sha256": "65c65b9e310951259a7cf440bc6d9fe609599bffb1e0588b292b603f6cddba7a",
+      "sha256": "65c65b9e310951259a7cf440bc6d9fe609599bffb1e0588b292b603f6cddba7a",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/wrist_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/meshes/wrist_link.STL",
+      "source_sha256": "72b5b2b46c8d289ac5d7bf407d897b6578a47d7f4ae62c273e3b8c06b46a2e0e",
+      "sha256": "72b5b2b46c8d289ac5d7bf407d897b6578a47d7f4ae62c273e3b8c06b46a2e0e",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/urdf/data_glove_urdf_L.urdf",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/urdf/data_glove_urdf_L.urdf",
+      "source_sha256": "b7536f04ba90918d44b645fee90f6979c8d0c62fee1fc1cd905304640f9c343b",
+      "sha256": "2cebc9b67e73f8a8753c61c640479d50b0f734a381b0adb79dcfeae7718f7b63",
+      "modified": true
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_L/package.xml",
+      "destination": "licenses/v21-left-package.xml",
+      "source_sha256": "ddc19ed4e0db0ea53748c2736b60317a786e3251547188cdb12859b35d99c466",
+      "sha256": "ddc19ed4e0db0ea53748c2736b60317a786e3251547188cdb12859b35d99c466",
+      "modified": false
+    },
+    {
+      "source": "config/dataglove/v21/left.json",
+      "destination": "config/dataglove/v21/left.json",
+      "source_sha256": "04c7f78639677e0181e72fe2ceac719f196ceeb8340f3f8416091ec9edefaebe",
+      "sha256": "04c7f78639677e0181e72fe2ceac719f196ceeb8340f3f8416091ec9edefaebe",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/urdf/left.urdf",
+      "destination": "assets/wuji-hand2/body/urdf/left.urdf",
+      "source_sha256": "f442069f455f062efdfbd026ab5436b5914d050acead236db018dd6ca37ad4f9",
+      "sha256": "f442069f455f062efdfbd026ab5436b5914d050acead236db018dd6ca37ad4f9",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_index_finger_distal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_index_finger_distal.STL",
+      "source_sha256": "fc27b41e8e3421fa1dc7235953a7b7acf225d099dfc4d28acea5de9d5f9f9a1f",
+      "sha256": "fc27b41e8e3421fa1dc7235953a7b7acf225d099dfc4d28acea5de9d5f9f9a1f",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_index_finger_middle.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_index_finger_middle.STL",
+      "source_sha256": "ea2a12b2bda01db3df716ba748141c95aa30329c2a57a288fac96a8a396e69c3",
+      "sha256": "ea2a12b2bda01db3df716ba748141c95aa30329c2a57a288fac96a8a396e69c3",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_index_finger_proximal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_index_finger_proximal.STL",
+      "source_sha256": "889893c611ee8990aadd801a14d80595aff1c79735b99dcb6e4b5c714b9449f5",
+      "sha256": "889893c611ee8990aadd801a14d80595aff1c79735b99dcb6e4b5c714b9449f5",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_index_finger_proximal_abd.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_index_finger_proximal_abd.STL",
+      "source_sha256": "4fa93695830162e6b53bd5e71f04c7ee0be8e1e8392d5808c91a247595c67fd6",
+      "sha256": "4fa93695830162e6b53bd5e71f04c7ee0be8e1e8392d5808c91a247595c67fd6",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_index_finger_tip.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_index_finger_tip.STL",
+      "source_sha256": "46705a19ba01c9bb47fbb5fd980d328517db0873075d51d45fc4cdb2c7ca95ba",
+      "sha256": "46705a19ba01c9bb47fbb5fd980d328517db0873075d51d45fc4cdb2c7ca95ba",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_middle_finger_distal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_middle_finger_distal.STL",
+      "source_sha256": "216b989ffeb09e8c1a2a9020f24877a2a5d77636b7b04003627dd6d08bd4ad15",
+      "sha256": "216b989ffeb09e8c1a2a9020f24877a2a5d77636b7b04003627dd6d08bd4ad15",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_middle_finger_middle.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_middle_finger_middle.STL",
+      "source_sha256": "09806f63737d840fe948b25029d0dc3a95c10b486091e4fd2ec740d8b232257b",
+      "sha256": "09806f63737d840fe948b25029d0dc3a95c10b486091e4fd2ec740d8b232257b",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_middle_finger_proximal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_middle_finger_proximal.STL",
+      "source_sha256": "b72d9f7c7918f072e6f33c3ac6db8fb2144c59ccebe7c2dcdd4b57768296f279",
+      "sha256": "b72d9f7c7918f072e6f33c3ac6db8fb2144c59ccebe7c2dcdd4b57768296f279",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_middle_finger_proximal_abd.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_middle_finger_proximal_abd.STL",
+      "source_sha256": "42620fb534341111f6a3197b131c6fd4d9083314c186ee505249e08f454a5d6f",
+      "sha256": "42620fb534341111f6a3197b131c6fd4d9083314c186ee505249e08f454a5d6f",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_middle_finger_tip.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_middle_finger_tip.STL",
+      "source_sha256": "aa27917fea1ab37016316dbca2d278d9c58820e4ddc25e03bee702494da02efe",
+      "sha256": "aa27917fea1ab37016316dbca2d278d9c58820e4ddc25e03bee702494da02efe",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_pinky_distal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_pinky_distal.STL",
+      "source_sha256": "6498e7dd931fea54186893bc786d3df5fa9746a267ebbc669d953368e14fad02",
+      "sha256": "6498e7dd931fea54186893bc786d3df5fa9746a267ebbc669d953368e14fad02",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_pinky_middle.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_pinky_middle.STL",
+      "source_sha256": "ce31549c1bbec187bf93c33f0938a7d5731d790879a6e65bb0b1afef92760cf2",
+      "sha256": "ce31549c1bbec187bf93c33f0938a7d5731d790879a6e65bb0b1afef92760cf2",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_pinky_proximal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_pinky_proximal.STL",
+      "source_sha256": "a78b77810a676d0976dae62b370612ab2c7a433c77704c42ac20e269719d40e9",
+      "sha256": "a78b77810a676d0976dae62b370612ab2c7a433c77704c42ac20e269719d40e9",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_pinky_proximal_abd.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_pinky_proximal_abd.STL",
+      "source_sha256": "8532bc1395fe8882146d79d4e4a0038e82cf702ddebda1b5d1efe0e0045ed1fc",
+      "sha256": "8532bc1395fe8882146d79d4e4a0038e82cf702ddebda1b5d1efe0e0045ed1fc",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_pinky_tip.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_pinky_tip.STL",
+      "source_sha256": "2128cdadca57dd6b9b242fa96cabfe52f3c6cb777c68a9adb5fef4087b48d891",
+      "sha256": "2128cdadca57dd6b9b242fa96cabfe52f3c6cb777c68a9adb5fef4087b48d891",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_ring_finger_distal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_ring_finger_distal.STL",
+      "source_sha256": "446ab578da37bf620259d204065d627978fba998391ef726f41eafd51c349855",
+      "sha256": "446ab578da37bf620259d204065d627978fba998391ef726f41eafd51c349855",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_ring_finger_middle.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_ring_finger_middle.STL",
+      "source_sha256": "af73e9dba84ef1159984037f865952bc14c19e4fd77074d166288156a94ce2e2",
+      "sha256": "af73e9dba84ef1159984037f865952bc14c19e4fd77074d166288156a94ce2e2",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_ring_finger_proximal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_ring_finger_proximal.STL",
+      "source_sha256": "7fddea702914b31f406460d2f5b8333d1ecaa09042a39e617786955373e39ed1",
+      "sha256": "7fddea702914b31f406460d2f5b8333d1ecaa09042a39e617786955373e39ed1",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_ring_finger_proximal_abd.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_ring_finger_proximal_abd.STL",
+      "source_sha256": "d380d1e07d60f72a4b90ab7baac266a8aeed833a4ffe28ab7416d8ebb198c9ed",
+      "sha256": "d380d1e07d60f72a4b90ab7baac266a8aeed833a4ffe28ab7416d8ebb198c9ed",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_ring_finger_tip.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_ring_finger_tip.STL",
+      "source_sha256": "e8b808dfa9453a36694d738b63c00ea469bf390f13a4667d2354c0541a0ad6e5",
+      "sha256": "e8b808dfa9453a36694d738b63c00ea469bf390f13a4667d2354c0541a0ad6e5",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_thumb_distal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_thumb_distal.STL",
+      "source_sha256": "dac0e148940e378bbcfb53a2a8b52d61dff6abfb3af71296060383684683f849",
+      "sha256": "dac0e148940e378bbcfb53a2a8b52d61dff6abfb3af71296060383684683f849",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_thumb_middle.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_thumb_middle.STL",
+      "source_sha256": "34eba9907f61397e4857d6867b2f19fb183e889892aabd4f5d8bdd5b854a3067",
+      "sha256": "34eba9907f61397e4857d6867b2f19fb183e889892aabd4f5d8bdd5b854a3067",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_thumb_proximal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_thumb_proximal.STL",
+      "source_sha256": "90b645053fb51cf0749aa3ced0db96aa9f3eea71eeb49154e3d0d4debb729ce5",
+      "sha256": "90b645053fb51cf0749aa3ced0db96aa9f3eea71eeb49154e3d0d4debb729ce5",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_thumb_proximal_abd.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_thumb_proximal_abd.STL",
+      "source_sha256": "d31c847c6b0bdc3e1c0c9443942db6a5cc7a3e154a0c3b58040557024615471d",
+      "sha256": "d31c847c6b0bdc3e1c0c9443942db6a5cc7a3e154a0c3b58040557024615471d",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_thumb_tip.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_thumb_tip.STL",
+      "source_sha256": "90e4ca9a22233e449ca6aef8f81b048401b6e46e50ecc5ca1843dbd473a82945",
+      "sha256": "90e4ca9a22233e449ca6aef8f81b048401b6e46e50ecc5ca1843dbd473a82945",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/left/l_wrist.STL",
+      "destination": "assets/wuji-hand2/body/meshes/left/l_wrist.STL",
+      "source_sha256": "54e86d34d8f486f0a769f8c77708afb73c3d621c15938ebd623bad86f71fb139",
+      "sha256": "54e86d34d8f486f0a769f8c77708afb73c3d621c15938ebd623bad86f71fb139",
+      "modified": false
+    },
+    {
+      "source": "config/retargeting/official/left.yaml",
+      "destination": "config/retargeting/official/left.yaml",
+      "source_sha256": "0c18e90832cb7989ab08e5dc50ace1cd8adb16479c301a0bce809e178bbb3767",
+      "sha256": "c04f9131f5f344b45fcad6bde34249c94b26fb66d375774422bc4c541956cdc9",
+      "modified": true
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/index_mcp_abd_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/index_mcp_abd_link.STL",
+      "source_sha256": "d638c391b2e91f5e89def68d702a5a35264a07729a05366b477fc3d7897a43dd",
+      "sha256": "d638c391b2e91f5e89def68d702a5a35264a07729a05366b477fc3d7897a43dd",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/index_mcp_flex_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/index_mcp_flex_link.STL",
+      "source_sha256": "f8f69c46cab9c441a334044ab1ad23dc9fa4311b3f4d432fd37ed44702bc7654",
+      "sha256": "f8f69c46cab9c441a334044ab1ad23dc9fa4311b3f4d432fd37ed44702bc7654",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/index_pip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/index_pip_link.STL",
+      "source_sha256": "6e381c52008949d207f496c84cb1854d4536d2a0b011a42f3906d9b07ceb7408",
+      "sha256": "6e381c52008949d207f496c84cb1854d4536d2a0b011a42f3906d9b07ceb7408",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/middle_mcp_abd_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/middle_mcp_abd_link.STL",
+      "source_sha256": "6968022c8d42ee3a7d570609b0f03ce6b83db1055ca5d19c687bd9a77b803f92",
+      "sha256": "6968022c8d42ee3a7d570609b0f03ce6b83db1055ca5d19c687bd9a77b803f92",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/middle_mcp_flex_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/middle_mcp_flex_link.STL",
+      "source_sha256": "6e9dc33bfeef1a6e2d1c82e8bcf9c6de56c678c4b8e3893f6029547d82b19711",
+      "sha256": "6e9dc33bfeef1a6e2d1c82e8bcf9c6de56c678c4b8e3893f6029547d82b19711",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/middle_pip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/middle_pip_link.STL",
+      "source_sha256": "4ced275fa38524fc7ef8364c002af086d847ba865e456415453824e11acd9592",
+      "sha256": "4ced275fa38524fc7ef8364c002af086d847ba865e456415453824e11acd9592",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/pinky_cmc_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/pinky_cmc_link.STL",
+      "source_sha256": "60d74eea79def55302f7974cb54610e54ef6ecf54c7bf5c402349def70add52f",
+      "sha256": "60d74eea79def55302f7974cb54610e54ef6ecf54c7bf5c402349def70add52f",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/pinky_mcp_abd_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/pinky_mcp_abd_link.STL",
+      "source_sha256": "a9028bd37d94bbdc8f0f3a9bb2371cb008894839551ba2f9bc97198453510608",
+      "sha256": "a9028bd37d94bbdc8f0f3a9bb2371cb008894839551ba2f9bc97198453510608",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/pinky_mcp_flex_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/pinky_mcp_flex_link.STL",
+      "source_sha256": "61e3d4409c090724e93a4836cee054a67d9b31a9b6d095921206dc2c4f8d1179",
+      "sha256": "61e3d4409c090724e93a4836cee054a67d9b31a9b6d095921206dc2c4f8d1179",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/pinky_pip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/pinky_pip_link.STL",
+      "source_sha256": "6b87f2809c79facc7220167eebaa75f935ee4b76ba056e251edc7156a3d7bd91",
+      "sha256": "6b87f2809c79facc7220167eebaa75f935ee4b76ba056e251edc7156a3d7bd91",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/ring_mcp_abd_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/ring_mcp_abd_link.STL",
+      "source_sha256": "6632cc892a4e2aa71e34c1c479f62792a4ba63c5411a12c88347481192ef8dce",
+      "sha256": "6632cc892a4e2aa71e34c1c479f62792a4ba63c5411a12c88347481192ef8dce",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/ring_mcp_flex_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/ring_mcp_flex_link.STL",
+      "source_sha256": "87b6895cf1aece262496a462d934a65502dc10d372f5535ad5389ead54ebb680",
+      "sha256": "87b6895cf1aece262496a462d934a65502dc10d372f5535ad5389ead54ebb680",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/ring_pip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/ring_pip_link.STL",
+      "source_sha256": "1d6b4fb920d44d0f49340f8ac04c2ec97f23c0c36ccedabf285c6fc87ec13109",
+      "sha256": "1d6b4fb920d44d0f49340f8ac04c2ec97f23c0c36ccedabf285c6fc87ec13109",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/thumb_cmc_abd_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/thumb_cmc_abd_link.STL",
+      "source_sha256": "cd304f7e169c378d88543eb3a352f618928673c538005f2c3796d3030234af1b",
+      "sha256": "cd304f7e169c378d88543eb3a352f618928673c538005f2c3796d3030234af1b",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/thumb_cmc_flex_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/thumb_cmc_flex_link.STL",
+      "source_sha256": "fd76322218326cb580e77d4eb4930ba90f5c44e6a559e793e254b75e422ed468",
+      "sha256": "fd76322218326cb580e77d4eb4930ba90f5c44e6a559e793e254b75e422ed468",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/thumb_mcp_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/deduplicated/thumb_mcp_link.STL",
+      "source_sha256": "124260e33360a5ef579156492827ed625236465edee7314aea1f71fcc37fa79c",
+      "sha256": "124260e33360a5ef579156492827ed625236465edee7314aea1f71fcc37fa79c",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/index_dip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/index_dip_link.STL",
+      "source_sha256": "02084c4a287894ce4651622ecb5e95f43283558be28d47de77a5071c5fb098ac",
+      "sha256": "02084c4a287894ce4651622ecb5e95f43283558be28d47de77a5071c5fb098ac",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/middle_dip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/middle_dip_link.STL",
+      "source_sha256": "f5b7e4cd218c7ffb1650965f9ad005f9349360af5eef838fadceff534f8863e7",
+      "sha256": "f5b7e4cd218c7ffb1650965f9ad005f9349360af5eef838fadceff534f8863e7",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/pinky_dip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/pinky_dip_link.STL",
+      "source_sha256": "d69991bce45eb4586921fc4154a4ba79acca1b1430728d2571728dd77cb7a570",
+      "sha256": "d69991bce45eb4586921fc4154a4ba79acca1b1430728d2571728dd77cb7a570",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/ring_dip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/ring_dip_link.STL",
+      "source_sha256": "998d68e50500a856dbdfccd76fc61e17c552d6b86c890f8bb56c4ac681578060",
+      "sha256": "998d68e50500a856dbdfccd76fc61e17c552d6b86c890f8bb56c4ac681578060",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/thumb_ip_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/thumb_ip_link.STL",
+      "source_sha256": "95b16bdc2c429e2f3f7bdea596fe27bb8ff92f0c5773b9a963ad1c0c0e1cca11",
+      "sha256": "95b16bdc2c429e2f3f7bdea596fe27bb8ff92f0c5773b9a963ad1c0c0e1cca11",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/wrist_link.STL",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/meshes/wrist_link.STL",
+      "source_sha256": "3be51691fce0eff41203860374a41e474a71f045c469fd178a858a05b7898b3a",
+      "sha256": "3be51691fce0eff41203860374a41e474a71f045c469fd178a858a05b7898b3a",
+      "modified": false
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/urdf/data_glove_urdf_R.urdf",
+      "destination": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/urdf/data_glove_urdf_R.urdf",
+      "source_sha256": "bad5aa5e69901905eebef3e4d55aa5baa317fa9d92337327b7054cbfc67a9c95",
+      "sha256": "064ce07b0b29bb26e5d7085978468e01da4e43200fb8b7dc39f5186be51ac349",
+      "modified": true
+    },
+    {
+      "source": "assets/data_glove_v2.1_urdf/data_glove_urdf_R/package.xml",
+      "destination": "licenses/v21-right-package.xml",
+      "source_sha256": "d12b50a5b404cd0e6e9c3727be1fd5aa1d06525954cc62fdc5289493605ae71b",
+      "sha256": "d12b50a5b404cd0e6e9c3727be1fd5aa1d06525954cc62fdc5289493605ae71b",
+      "modified": false
+    },
+    {
+      "source": "config/dataglove/v21/right.json",
+      "destination": "config/dataglove/v21/right.json",
+      "source_sha256": "729591f94ff03fa192decfe678be398cd7927c282d9750a9c030e985c49582aa",
+      "sha256": "729591f94ff03fa192decfe678be398cd7927c282d9750a9c030e985c49582aa",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/urdf/right.urdf",
+      "destination": "assets/wuji-hand2/body/urdf/right.urdf",
+      "source_sha256": "f890b6f12931be6e526869f569f94049ed931a03878099478933b1d27f1afd1d",
+      "sha256": "f890b6f12931be6e526869f569f94049ed931a03878099478933b1d27f1afd1d",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_index_finger_distal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_index_finger_distal.STL",
+      "source_sha256": "24e32dc514b03fe545458f881385b354ea5f73269ea0bb936460227f76ca63f6",
+      "sha256": "24e32dc514b03fe545458f881385b354ea5f73269ea0bb936460227f76ca63f6",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_index_finger_middle.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_index_finger_middle.STL",
+      "source_sha256": "92291cb51f2368f75b1dc82887bbc5f91cc6e5c322976290075cf44f6a929e22",
+      "sha256": "92291cb51f2368f75b1dc82887bbc5f91cc6e5c322976290075cf44f6a929e22",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_index_finger_proximal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_index_finger_proximal.STL",
+      "source_sha256": "e34f81c24aa4e91a53c3865c490f8311d32041fb9ba5e43532eeeb36f875baa8",
+      "sha256": "e34f81c24aa4e91a53c3865c490f8311d32041fb9ba5e43532eeeb36f875baa8",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_index_finger_proximal_abd.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_index_finger_proximal_abd.STL",
+      "source_sha256": "36211909a4e4e740fe5e2e74aaf6c59ce336c020ae071a5ad96abe5bf31d88dc",
+      "sha256": "36211909a4e4e740fe5e2e74aaf6c59ce336c020ae071a5ad96abe5bf31d88dc",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_index_finger_tip.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_index_finger_tip.STL",
+      "source_sha256": "e78b5c965811e030ce8237f8b5d5547712050f5d01b98acea3ba0fdb283629c2",
+      "sha256": "e78b5c965811e030ce8237f8b5d5547712050f5d01b98acea3ba0fdb283629c2",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_middle_finger_distal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_middle_finger_distal.STL",
+      "source_sha256": "31886b660ac59e947af105ac4159f599694bdc9f41f886fceee797954a884b67",
+      "sha256": "31886b660ac59e947af105ac4159f599694bdc9f41f886fceee797954a884b67",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_middle_finger_middle.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_middle_finger_middle.STL",
+      "source_sha256": "ce276d039293a1da278530538204f477d0d741ea4817b650d85f90d209bda02e",
+      "sha256": "ce276d039293a1da278530538204f477d0d741ea4817b650d85f90d209bda02e",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_middle_finger_proximal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_middle_finger_proximal.STL",
+      "source_sha256": "5a47d194f8d43fa059f021ea50d5d8d61b2db218a3fa58a3c3f7098976b088b2",
+      "sha256": "5a47d194f8d43fa059f021ea50d5d8d61b2db218a3fa58a3c3f7098976b088b2",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_middle_finger_proximal_abd.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_middle_finger_proximal_abd.STL",
+      "source_sha256": "d5bbb39cacf91d6ff8f764f2997ef41bff546d7783774d47ff0917a2fd3452ce",
+      "sha256": "d5bbb39cacf91d6ff8f764f2997ef41bff546d7783774d47ff0917a2fd3452ce",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_middle_finger_tip.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_middle_finger_tip.STL",
+      "source_sha256": "b11bc306d9d0dfb2a99480c3cccff95f2671adc7f37bb77c6a9f43a5fcadc05d",
+      "sha256": "b11bc306d9d0dfb2a99480c3cccff95f2671adc7f37bb77c6a9f43a5fcadc05d",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_pinky_distal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_pinky_distal.STL",
+      "source_sha256": "880389503daa929960f1e3c97d6826e1578d0ec4ced94303e3d09bdc080c7b33",
+      "sha256": "880389503daa929960f1e3c97d6826e1578d0ec4ced94303e3d09bdc080c7b33",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_pinky_middle.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_pinky_middle.STL",
+      "source_sha256": "53d72b946690ee54a2b3c699521118e746f9ec2daf90690780cbcb17d0370bbd",
+      "sha256": "53d72b946690ee54a2b3c699521118e746f9ec2daf90690780cbcb17d0370bbd",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_pinky_proximal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_pinky_proximal.STL",
+      "source_sha256": "56a4e024ee0d64517190e271b7443b84f2f53f60580df6a34ecbcb90bd9f3192",
+      "sha256": "56a4e024ee0d64517190e271b7443b84f2f53f60580df6a34ecbcb90bd9f3192",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_pinky_proximal_abd.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_pinky_proximal_abd.STL",
+      "source_sha256": "5e4b0f3f928cb81287b0c6727aba7dc5445d47080f1faf3640a242a02fb2f672",
+      "sha256": "5e4b0f3f928cb81287b0c6727aba7dc5445d47080f1faf3640a242a02fb2f672",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_pinky_tip.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_pinky_tip.STL",
+      "source_sha256": "ddb28bb820e90f3ad931905959d2665a09dab7ec9b465f8c4c28aeb711dfeed1",
+      "sha256": "ddb28bb820e90f3ad931905959d2665a09dab7ec9b465f8c4c28aeb711dfeed1",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_ring_finger_distal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_ring_finger_distal.STL",
+      "source_sha256": "8351d83b37e94f5245c8b9ba87b7db47fb028d85e62543cd84dca5f1472c4bb3",
+      "sha256": "8351d83b37e94f5245c8b9ba87b7db47fb028d85e62543cd84dca5f1472c4bb3",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_ring_finger_middle.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_ring_finger_middle.STL",
+      "source_sha256": "ea938bd254f9c23440954089c8f898a9032aaca6aa810f85fa0a0c47c2630679",
+      "sha256": "ea938bd254f9c23440954089c8f898a9032aaca6aa810f85fa0a0c47c2630679",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_ring_finger_proximal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_ring_finger_proximal.STL",
+      "source_sha256": "9aebcd926a1b825bb0ab5a02ee4909855d40e5af6eb4cba5a4e83cd82296a70a",
+      "sha256": "9aebcd926a1b825bb0ab5a02ee4909855d40e5af6eb4cba5a4e83cd82296a70a",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_ring_finger_proximal_abd.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_ring_finger_proximal_abd.STL",
+      "source_sha256": "e4265f3860b82a67b496d9617a3bbc1a88544463e94b7fc3ad60333385a593a4",
+      "sha256": "e4265f3860b82a67b496d9617a3bbc1a88544463e94b7fc3ad60333385a593a4",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_ring_finger_tip.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_ring_finger_tip.STL",
+      "source_sha256": "13661aab42a6a95153f9c793ce54d1a0156260cd3389339f53a671904c781bc1",
+      "sha256": "13661aab42a6a95153f9c793ce54d1a0156260cd3389339f53a671904c781bc1",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_thumb_distal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_thumb_distal.STL",
+      "source_sha256": "a1f3250a16bf47a193166e89201386f050f0728e456658acd3ec5a2bd028b7e9",
+      "sha256": "a1f3250a16bf47a193166e89201386f050f0728e456658acd3ec5a2bd028b7e9",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_thumb_middle.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_thumb_middle.STL",
+      "source_sha256": "8e9aca1799e172ebead075089eb454dcc2d2940b652a5c528eb2b8197fee59c5",
+      "sha256": "8e9aca1799e172ebead075089eb454dcc2d2940b652a5c528eb2b8197fee59c5",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_thumb_proximal.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_thumb_proximal.STL",
+      "source_sha256": "d29a17db5a884412e23cb0a13eb4b096c83a70eb416236a2c84d7e52c4711e71",
+      "sha256": "d29a17db5a884412e23cb0a13eb4b096c83a70eb416236a2c84d7e52c4711e71",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_thumb_proximal_abd.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_thumb_proximal_abd.STL",
+      "source_sha256": "b4b9defa41d81a996b1b5570a40b8b76c2eac7c97317eb83c37bb9961d3c62d0",
+      "sha256": "b4b9defa41d81a996b1b5570a40b8b76c2eac7c97317eb83c37bb9961d3c62d0",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_thumb_tip.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_thumb_tip.STL",
+      "source_sha256": "2361fef54f9b8220aa13dfe611e357b1badc44f32990f2f0654d8d66a997591b",
+      "sha256": "2361fef54f9b8220aa13dfe611e357b1badc44f32990f2f0654d8d66a997591b",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/hand2/body/meshes/right/r_wrist.STL",
+      "destination": "assets/wuji-hand2/body/meshes/right/r_wrist.STL",
+      "source_sha256": "bd3e172b3d4b89cc007a3a05dc33ddada268add713156c447bcf1f21f00ba908",
+      "sha256": "bd3e172b3d4b89cc007a3a05dc33ddada268add713156c447bcf1f21f00ba908",
+      "modified": false
+    },
+    {
+      "source": "config/retargeting/official/right.yaml",
+      "destination": "config/retargeting/official/right.yaml",
+      "source_sha256": "b2f7bf7548783471a6673238ba5e8d2d7173d6e5852e407769d504eddc8000f5",
+      "sha256": "796c5e284f48564e7925ebbbccc91c70c88feb9c10edc624d211355b4c7ef2a2",
+      "modified": true
+    },
+    {
+      "source": "config/retargeting/v21_right_mano_morphology.json",
+      "destination": "config/retargeting/v21_right_mano_morphology.json",
+      "source_sha256": "a9fe4f12d70434c1e998c95c9808d8249d973817f41a11b5cdb969b1c5044e28",
+      "sha256": "a9fe4f12d70434c1e998c95c9808d8249d973817f41a11b5cdb969b1c5044e28",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/LICENSE",
+      "destination": "licenses/wuji-retargeting-LICENSE",
+      "source_sha256": "8c0114d9f726c5aa4aa31a427123df7b2d250c89a89aea92bb428cc31d03d05e",
+      "sha256": "8c0114d9f726c5aa4aa31a427123df7b2d250c89a89aea92bb428cc31d03d05e",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/wuji-description/LICENSE",
+      "destination": "licenses/wuji-description-LICENSE",
+      "source_sha256": "38b27e3155e0c1c8d6f3e909e7a00359a302085dfd9ae963b52a91cbbe25afa3",
+      "sha256": "38b27e3155e0c1c8d6f3e909e7a00359a302085dfd9ae963b52a91cbbe25afa3",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/LICENSE",
+      "destination": "vendor/wuji-retargeting/LICENSE",
+      "source_sha256": "8c0114d9f726c5aa4aa31a427123df7b2d250c89a89aea92bb428cc31d03d05e",
+      "sha256": "8c0114d9f726c5aa4aa31a427123df7b2d250c89a89aea92bb428cc31d03d05e",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/__init__.py",
+      "destination": "vendor/wuji-retargeting/wuji_retargeting/__init__.py",
+      "source_sha256": "606f13f4b3516403f4e0bc0ee1b5492be34b4518b1c29c33fc47dcbbf9fd8adb",
+      "sha256": "606f13f4b3516403f4e0bc0ee1b5492be34b4518b1c29c33fc47dcbbf9fd8adb",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/retarget.py",
+      "destination": "vendor/wuji-retargeting/wuji_retargeting/retarget.py",
+      "source_sha256": "c9f3dbdff8ce26bf34a0463dbad1ec2f84560ed294f925dc88e1e89a0bb90180",
+      "sha256": "fe58c8e5506351af4bb96302918f427601fec118c0e33603fb2a6f502e314505",
+      "modified": true
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/robot.py",
+      "destination": "vendor/wuji-retargeting/wuji_retargeting/robot.py",
+      "source_sha256": "2f4913ae86e5eed2b95578e259050487ace2351b2d35443880a9b6a24fca492c",
+      "sha256": "2f4913ae86e5eed2b95578e259050487ace2351b2d35443880a9b6a24fca492c",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/mediapipe.py",
+      "destination": "vendor/wuji-retargeting/wuji_retargeting/mediapipe.py",
+      "source_sha256": "3da20bf3df1963c84f5d66d17ec340d3b01cb63d6b0b022e512c4a9324ed7510",
+      "sha256": "3da20bf3df1963c84f5d66d17ec340d3b01cb63d6b0b022e512c4a9324ed7510",
+      "modified": false
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/opt/base.py",
+      "destination": "vendor/wuji-retargeting/wuji_retargeting/opt/base.py",
+      "source_sha256": "841b59c0b8609de4c3b7e6f477248edf6b2e0e5da939f2970dfa3631bfce6c3b",
+      "sha256": "834961d4aefda6fb313224610c0ac62d77899441b677a785da03f31250a5514f",
+      "modified": true
+    },
+    {
+      "source": "vendor/wuji-retargeting/wuji_retargeting/opt/adaptive_analytical.py",
+      "destination": "vendor/wuji-retargeting/wuji_retargeting/opt/adaptive_analytical.py",
+      "source_sha256": "29cc31efa74012de909d1638abd7af786aadc020e156aef542fe50b629f3f306",
+      "sha256": "29cc31efa74012de909d1638abd7af786aadc020e156aef542fe50b629f3f306",
+      "modified": false
+    },
+    {
+      "source": "config/retargeting/v21_right_mano_morphology.json",
+      "destination": "config/retargeting/v21_left_mano_morphology.json",
+      "source_sha256": "a9fe4f12d70434c1e998c95c9808d8249d973817f41a11b5cdb969b1c5044e28",
+      "sha256": "f97070f06610ac2131cd574e83dee01136a8ce935693b7422eb4f9c6565053b1",
+      "modified": true
+    },
+    {
+      "source": "src/data_glove_wuji_teleop/profiles/dataglove/mapping.py",
+      "destination": "src/glove_calibrate/core/angles.py",
+      "source_sha256": "bcee1821540ecc6285a4ea4095a15d890a115778b109fb9a8e2f266e56f4f4e6",
+      "sha256": "015aa09128348d2dae3649c0fae9214315b16b7e2b24b86bcb2368e8a5dda74a",
+      "modified": true,
+      "selection": "shortest_angular_delta_deg only"
+    }
+  ]
+}

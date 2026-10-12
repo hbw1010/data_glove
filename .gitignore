@@ -1,0 +1,17 @@
+.pixi/
+.cache/
+__pycache__/
+*.egg-info/
+web/node_modules/
+web/dist/
+.pytest_cache/
+data/
+config/dataglove/v21/zero/*.json
+
+# 本地凭据与编辑器临时文件
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.DS_Store

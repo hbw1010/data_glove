@@ -1,0 +1,1160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mirrored from data_glove_urdf_R across the XZ plane (y -> -y).
+     Origins and mesh vertices use S = diag(1, -1, 1); rotations use S R S;
+     joint axes use -S; inertia uses S I S; STL triangle winding is reversed. -->
+<robot
+  name="data_glove_urdf_L">
+  <link
+    name="wrist_link">
+    <inertial>
+      <origin
+        xyz="0.00243172121820216 0.00586963668589176 0.0305107098071993"
+        rpy="0 0 0" />
+      <mass
+        value="0.0649740671171899" />
+      <inertia
+        ixx="4.73157889997242E-05"
+        ixy="-1.92384257415069E-07"
+        ixz="2.15913447866634E-07"
+        iyy="3.08600022933471E-05"
+        iyz="-3.7694620612432E-06"
+        izz="2.09053518789419E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/wrist_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/wrist_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="thumb_cmc_flex_link">
+    <inertial>
+      <origin
+        xyz="0.0314827264033343 -0.025714295785987 0.00742155709385328"
+        rpy="0 0 0" />
+      <mass
+        value="0.031572235751142" />
+      <inertia
+        ixx="4.34086212573515E-06"
+        ixy="1.02831742293463E-06"
+        ixz="-1.78177490393047E-06"
+        iyy="7.29770550924035E-06"
+        iyz="1.25964637938147E-06"
+        izz="6.03573066632522E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/thumb_cmc_flex_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/thumb_cmc_flex_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="thumb_cmc_flex_joint"
+    type="continuous">
+    <origin
+      xyz="-0.00699999999999964 -0.02925 -0.00800000000000402"
+      rpy="0 0 0" />
+    <parent
+      link="wrist_link" />
+    <child
+      link="thumb_cmc_flex_link" />
+    <axis
+      xyz="-1 0 0" />
+  </joint>
+  <link
+    name="thumb_cmc_abd_link">
+    <inertial>
+      <origin
+        xyz="0.00929236192352068 -0.0194610674794478 0.0204284271065663"
+        rpy="0 0 0" />
+      <mass
+        value="0.00997316709735156" />
+      <inertia
+        ixx="1.05831471814891E-06"
+        ixy="-4.49487807729276E-08"
+        ixz="-3.47507718511338E-08"
+        iyy="1.14336875129803E-06"
+        iyz="9.23133219749646E-09"
+        izz="8.48354835213032E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/thumb_cmc_abd_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/thumb_cmc_abd_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="thumb_cmc_abd_joint"
+    type="continuous">
+    <origin
+      xyz="0.0454308057330269 -0.0358019072539745 0.0131646872911193"
+      rpy="0 0 0" />
+    <parent
+      link="thumb_cmc_flex_link" />
+    <child
+      link="thumb_cmc_abd_link" />
+    <axis
+      xyz="0 0.499999999999999 0.866025403784439" />
+  </joint>
+  <link
+    name="thumb_mcp_link">
+    <inertial>
+      <origin
+        xyz="0.012526072544135 -0.0327711250516928 0.0131130066500572"
+        rpy="0 0 0" />
+      <mass
+        value="0.00775946907876734" />
+      <inertia
+        ixx="1.01457046418238E-06"
+        ixy="-4.4583037487932E-08"
+        ixz="-3.59905537988081E-08"
+        iyy="1.0964597631026E-06"
+        iyz="7.70569595287971E-09"
+        izz="8.16100003557268E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/thumb_mcp_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/thumb_mcp_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="thumb_mcp_joint"
+    type="continuous">
+    <origin
+      xyz="0 0.00824999999999947 0.0142894191624436"
+      rpy="0 0 0" />
+    <parent
+      link="thumb_cmc_abd_link" />
+    <child
+      link="thumb_mcp_link" />
+    <axis
+      xyz="0.939692620785907 0.296198132726029 -0.171010071662832" />
+  </joint>
+  <link
+    name="thumb_ip_link">
+    <inertial>
+      <origin
+        xyz="0.00627219161810315 -0.0160895610196539 0.00551367289544378"
+        rpy="0 0 0" />
+      <mass
+        value="0.00372008725843048" />
+      <inertia
+        ixx="4.24792161414986E-07"
+        ixy="-1.22177289759199E-08"
+        ixz="-1.10938784396178E-08"
+        iyy="4.92071765518089E-07"
+        iyz="6.14073134935214E-08"
+        izz="4.23283378648118E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/thumb_ip_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/thumb_ip_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="thumb_ip_joint"
+    type="continuous">
+    <origin
+      xyz="0.0119707050163985 -0.028482918847228 0.0164446208637534"
+      rpy="0 0 0" />
+    <parent
+      link="thumb_mcp_link" />
+    <child
+      link="thumb_ip_link" />
+    <axis
+      xyz="0.939692620785907 0.29619813272603 -0.171010071662832" />
+  </joint>
+  <link
+    name="index_mcp_abd_link">
+    <inertial>
+      <origin
+        xyz="0.00804001009711953 0.000557224735269989 0.0432010393939272"
+        rpy="0 0 0" />
+      <mass
+        value="0.0125745762969568" />
+      <inertia
+        ixx="1.19602839550629E-06"
+        ixy="1.67274359152243E-08"
+        ixz="-9.78996377000864E-08"
+        iyy="1.27019498393106E-06"
+        iyz="-3.22623506492783E-08"
+        izz="1.13895244063965E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/index_mcp_abd_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/index_mcp_abd_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="index_mcp_abd_joint"
+    type="continuous">
+    <origin
+      xyz="-0.00699999999999969 -0.0240000000000001 0.064999999999996"
+      rpy="0 0 0" />
+    <parent
+      link="wrist_link" />
+    <child
+      link="index_mcp_abd_link" />
+    <axis
+      xyz="1 0 0" />
+  </joint>
+  <link
+    name="index_mcp_flex_link">
+    <inertial>
+      <origin
+        xyz="-0.0057974538303605 0.000303838777539926 0.0526839959932209"
+        rpy="0 0 0" />
+      <mass
+        value="0.0103608768868774" />
+      <inertia
+        ixx="1.15878877412536E-06"
+        ixy="1.99956908524899E-08"
+        ixz="-9.15247416227869E-08"
+        iyy="1.22726567345844E-06"
+        iyz="-3.09599017865714E-08"
+        izz="1.0962132552004E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/index_mcp_flex_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/index_mcp_flex_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="index_mcp_flex_joint"
+    type="continuous">
+    <origin
+      xyz="0.0165 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="index_mcp_abd_link" />
+    <child
+      link="index_mcp_flex_link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="index_pip_link">
+    <inertial>
+      <origin
+        xyz="-0.00352650718889392 0.000178562429182703 0.0260545982307064"
+        rpy="0 0 0" />
+      <mass
+        value="0.0060484253448595" />
+      <inertia
+        ixx="5.75583129786337E-07"
+        ixy="7.82583397416238E-09"
+        ixz="-9.73618114129823E-09"
+        iyy="5.34981770289831E-07"
+        iyz="-1.49388768034414E-08"
+        izz="5.67336239990721E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/index_pip_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/index_pip_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="index_pip_joint"
+    type="continuous">
+    <origin
+      xyz="-0.000752784494079593 0 0.0439935599321705"
+      rpy="0 0 0" />
+    <parent
+      link="index_mcp_flex_link" />
+    <child
+      link="index_pip_link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="index_dip_link">
+    <inertial>
+      <origin
+        xyz="-0.00205764130630155 -0.000249694786346483 0.015039550377621"
+        rpy="0 0 0" />
+      <mass
+        value="0.002730132514109" />
+      <inertia
+        ixx="2.54885503586639E-07"
+        ixy="-5.60676762375949E-09"
+        ixz="-3.19231843651397E-08"
+        iyy="2.38031057583201E-07"
+        iyz="-4.19011486215193E-09"
+        izz="2.26468109001231E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/index_dip_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/index_dip_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="index_dip_joint"
+    type="continuous">
+    <origin
+      xyz="-0.00042703738833888 0 0.0247825614339846"
+      rpy="0 0 0" />
+    <parent
+      link="index_pip_link" />
+    <child
+      link="index_dip_link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="middle_mcp_abd_link">
+    <inertial>
+      <origin
+        xyz="0.00927211538542102 0.000509298509673091 0.0479170370443087"
+        rpy="0 0 0" />
+      <mass
+        value="0.0137696444247551" />
+      <inertia
+        ixx="1.56868206319545E-06"
+        ixy="1.86790243720275E-08"
+        ixz="-1.13891231919053E-07"
+        iyy="1.62658047878176E-06"
+        iyz="-4.02451515438616E-08"
+        izz="1.35041381338832E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/middle_mcp_abd_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/middle_mcp_abd_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="middle_mcp_abd_joint"
+    type="continuous">
+    <origin
+      xyz="-0.00699999999999993 0 0.069999999999996"
+      rpy="0 0 0" />
+    <parent
+      link="wrist_link" />
+    <child
+      link="middle_mcp_abd_link" />
+    <axis
+      xyz="1 0 0" />
+  </joint>
+  <link
+    name="middle_mcp_flex_link">
+    <inertial>
+      <origin
+        xyz="-0.00462010957613007 0.000272935757274468 0.0573227193080639"
+        rpy="0 0 0" />
+      <mass
+        value="0.0115559450146757" />
+      <inertia
+        ixx="1.53144244181451E-06"
+        ixy="2.1947279309293E-08"
+        ixz="-1.07516335841754E-07"
+        iyy="1.58365116830913E-06"
+        iyz="-3.89427026811546E-08"
+        izz="1.30767462794906E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/middle_mcp_flex_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/middle_mcp_flex_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="middle_mcp_flex_joint"
+    type="continuous">
+    <origin
+      xyz="0.0165 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="middle_mcp_abd_link" />
+    <child
+      link="middle_mcp_flex_link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="middle_pip_link">
+    <inertial>
+      <origin
+        xyz="-0.00306068668495715 0.000159125049227865 0.0279910938173173"
+        rpy="0 0 0" />
+      <mass
+        value="0.00680125411423723" />
+      <inertia
+        ixx="7.46049729571279E-07"
+        ixy="9.16139152633978E-09"
+        ixz="1.04498966082247E-09"
+        iyy="6.83707482021405E-07"
+        iyz="-1.93637012427387E-08"
+        izz="6.94534393387506E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/middle_pip_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/middle_pip_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="middle_pip_joint"
+    type="continuous">
+    <origin
+      xyz="0 0 0.048"
+      rpy="0 0 0" />
+    <parent
+      link="middle_mcp_flex_link" />
+    <child
+      link="middle_pip_link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="middle_dip_link">
+    <inertial>
+      <origin
+        xyz="-0.00190534445528978 -0.000242352569454061 0.0148694044888816"
+        rpy="0 0 0" />
+      <mass
+        value="0.00281106011894828" />
+      <inertia
+        ixx="2.74564988829497E-07"
+        ixy="-5.56368229197429E-09"
+        ixz="-3.23227424643303E-08"
+        iyy="2.45975039495297E-07"
+        iyz="-4.24850380424928E-09"
+        izz="2.44820124502751E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/middle_dip_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/middle_dip_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="middle_dip_joint"
+    type="continuous">
+    <origin
+      xyz="0 0 0.029"
+      rpy="0 0 0" />
+    <parent
+      link="middle_pip_link" />
+    <child
+      link="middle_dip_link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="ring_mcp_abd_link">
+    <inertial>
+      <origin
+        xyz="0.00890954506754314 0.000545377526839981 0.0442564042834283"
+        rpy="0 0 0" />
+      <mass
+        value="0.0128491192702255" />
+      <inertia
+        ixx="1.25128274381805E-06"
+        ixy="1.74416715247317E-08"
+        ixz="-9.25193089303549E-08"
+        iyy="1.32915659277181E-06"
+        iyz="-3.44036534826846E-08"
+        izz="1.17514290005234E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/ring_mcp_abd_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/ring_mcp_abd_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="ring_mcp_abd_joint"
+    type="continuous">
+    <origin
+      xyz="-0.00700000000000017 0.0239999999999999 0.0649999999999961"
+      rpy="0 0 0" />
+    <parent
+      link="wrist_link" />
+    <child
+      link="ring_mcp_abd_link" />
+    <axis
+      xyz="1 0 0" />
+  </joint>
+  <link
+    name="ring_mcp_flex_link">
+    <inertial>
+      <origin
+        xyz="-0.00483243657099303 0.000296066554063661 0.0537142355496032"
+        rpy="0 0 0" />
+      <mass
+        value="0.0106354198601461" />
+      <inertia
+        ixx="1.21404312243711E-06"
+        ixy="2.07099264619972E-08"
+        ixz="-8.61444128530555E-08"
+        iyy="1.28622728229918E-06"
+        iyz="-3.31012046199777E-08"
+        izz="1.13240371461309E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/ring_mcp_flex_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/ring_mcp_flex_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="ring_mcp_flex_joint"
+    type="continuous">
+    <origin
+      xyz="0.0165000000000001 0 0"
+      rpy="0 0 0" />
+    <parent
+      link="ring_mcp_abd_link" />
+    <child
+      link="ring_mcp_flex_link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="ring_pip_link">
+    <inertial>
+      <origin
+        xyz="-0.00323556687679726 0.000171032875535528 0.0270200415957612"
+        rpy="0 0 0" />
+      <mass
+        value="0.00632346981410906" />
+      <inertia
+        ixx="6.3088436744394E-07"
+        ixy="8.52686344131407E-09"
+        ixz="-4.35225806640198E-09"
+        iyy="5.94016682392808E-07"
+        iyz="-1.70787406913392E-08"
+        izz="6.03563967388287E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/ring_pip_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/ring_pip_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="ring_pip_joint"
+    type="continuous">
+    <origin
+      xyz="0 0 0.044"
+      rpy="0 0 0" />
+    <parent
+      link="ring_mcp_flex_link" />
+    <child
+      link="ring_pip_link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="ring_dip_link">
+    <inertial>
+      <origin
+        xyz="-0.00192444068161598 -0.000249740891608192 0.0148473835136064"
+        rpy="0 0 0" />
+      <mass
+        value="0.0027297211233674" />
+      <inertia
+        ixx="2.55593327777691E-07"
+        ixy="-5.56066804426602E-09"
+        ixz="-3.16054493004136E-08"
+        iyy="2.38026632647957E-07"
+        iyz="-4.25240007269597E-09"
+        izz="2.25756530259753E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/ring_dip_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/ring_dip_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="ring_dip_joint"
+    type="continuous">
+    <origin
+      xyz="0 0 0.027"
+      rpy="0 0 0" />
+    <parent
+      link="ring_pip_link" />
+    <child
+      link="ring_dip_link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="pinky_cmc_link">
+    <inertial>
+      <origin
+        xyz="0.00705423333881165 0.0146210498988742 0.0346708732674235"
+        rpy="0 0 0" />
+      <mass
+        value="0.018711852048732" />
+      <inertia
+        ixx="1.95198275846383E-06"
+        ixy="-3.04162827001476E-08"
+        ixz="-1.38479766187607E-07"
+        iyy="1.68091890512116E-06"
+        iyz="-3.76340866791302E-08"
+        izz="1.21817551882861E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/pinky_cmc_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/pinky_cmc_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="pinky_cmc_joint"
+    type="continuous">
+    <origin
+      xyz="-0.00250000000000017 0.03075 0.0372999999999961"
+      rpy="0 0 0" />
+    <parent
+      link="wrist_link" />
+    <child
+      link="pinky_cmc_link" />
+    <axis
+      xyz="0 0 -1" />
+  </joint>
+  <link
+    name="pinky_mcp_abd_link">
+    <inertial>
+      <origin
+        xyz="0.00767805127008353 0.000662641393880961 0.0313264342372721"
+        rpy="0 0 0" />
+      <mass
+        value="0.0105505093720141" />
+      <inertia
+        ixx="6.69536925605456E-07"
+        ixy="1.19771749465587E-08"
+        ixz="-1.04246371467206E-07"
+        iyy="7.75705442763629E-07"
+        iyz="-1.66795054238408E-08"
+        izz="7.90094411496171E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/pinky_mcp_abd_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/pinky_mcp_abd_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="pinky_mcp_abd_joint"
+    type="continuous">
+    <origin
+      xyz="0.00105365799264582 0.0158391918985787 0.0217"
+      rpy="0 0 0" />
+    <parent
+      link="pinky_cmc_link" />
+    <child
+      link="pinky_mcp_abd_link" />
+    <axis
+      xyz="1 0 0" />
+  </joint>
+  <link
+    name="pinky_mcp_flex_link">
+    <inertial>
+      <origin
+        xyz="-0.00563349720874285 0.000375728302561239 0.0397328077920719"
+        rpy="0 0 0" />
+      <mass
+        value="0.00833680996193472" />
+      <inertia
+        ixx="6.3229730422452E-07"
+        ixy="1.52454298838243E-08"
+        ixz="-9.78714753899069E-08"
+        iyy="7.32776132291002E-07"
+        iyz="-1.53770565611339E-08"
+        izz="7.47355226056916E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/pinky_mcp_flex_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/pinky_mcp_flex_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="pinky_mcp_flex_joint"
+    type="continuous">
+    <origin
+      xyz="0.0165030001593482 0 0.000225817864610577"
+      rpy="0 0 0" />
+    <parent
+      link="pinky_mcp_abd_link" />
+    <child
+      link="pinky_mcp_flex_link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="pinky_pip_link">
+    <inertial>
+      <origin
+        xyz="-0.00368155227775799 0.000218186416965201 0.0213905248922317"
+        rpy="0 0 0" />
+      <mass
+        value="0.00488263800997028" />
+      <inertia
+        ixx="3.57799035790018E-07"
+        ixy="6.91307358745043E-09"
+        ixz="-1.34709288186864E-08"
+        iyy="3.38213265686769E-07"
+        iyz="-7.58231283017063E-09"
+        izz="3.7113093681742E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/pinky_pip_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/deduplicated/pinky_pip_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="pinky_pip_joint"
+    type="continuous">
+    <origin
+      xyz="0 0 0.032"
+      rpy="0 0 0" />
+    <parent
+      link="pinky_mcp_flex_link" />
+    <child
+      link="pinky_pip_link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+  <link
+    name="pinky_dip_link">
+    <inertial>
+      <origin
+        xyz="-0.00280624255313535 -0.000293908452586526 0.0137009903097266"
+        rpy="0 0 0" />
+      <mass
+        value="0.00237393045695158" />
+      <inertia
+        ixx="1.88704091734959E-07"
+        ixy="-5.21177566182353E-09"
+        ixz="-2.05163607374284E-08"
+        iyy="1.77261748653554E-07"
+        iyz="-3.75148495285806E-09"
+        izz="1.57178341501088E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/pinky_dip_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="../meshes/pinky_dip_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="pinky_dip_joint"
+    type="continuous">
+    <origin
+      xyz="0.000354433296842128 0 0.0187564979852542"
+      rpy="0 0 0" />
+    <parent
+      link="pinky_pip_link" />
+    <child
+      link="pinky_dip_link" />
+    <axis
+      xyz="0 -1 0" />
+  </joint>
+</robot>
